@@ -1,5 +1,4 @@
-from matplotlib.font_manager import findSystemFonts
-from database import Player, PlayerControl
+from src.core.database import Player, PlayerControl
 
 class user:
     def __init__(self, firstName, lastName, idNum):
@@ -32,10 +31,16 @@ class user:
         return self.uid
 
 class player(user):    
+    def checkLogin(self, uid, password):
+        return PlayerControl.checkLogin(uid, password)
+
     def checkWinnings(self, uid):
         return PlayerControl.getWinnings()
 
 class admin(user):
+    def checkLogin(self, uid, password):
+        return PlayerControl.checkLogin(uid, password)
+
     def addWinnings(self, uid, winnings):
         PlayerControl.addWinings(uid, winnings)
 
