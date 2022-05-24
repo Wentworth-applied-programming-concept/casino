@@ -2,7 +2,7 @@ from peewee import *
 import argparse
 import sys
 
-db = SqliteDatabase('casino.db')
+db = SqliteDatabase('src/core/casino.db')
 
 class Player(Model):
     userID = IntegerField()
