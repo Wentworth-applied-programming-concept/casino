@@ -1,9 +1,11 @@
-from src.core.database import PlayerControl
+from src.core.casino import player, admin
+
 import random
 
 class slots:
     def __init__(self):
-        self.player = PlayerControl()
+        self.player = player()
+        self.admin = admin()
 
         run = False
         while not run:
@@ -20,9 +22,10 @@ class slots:
             userInput = input("Would you like to play (y/n): ")
 
             if userInput == 'y':
-                self.player.addWinnings(self.uid, -100)
+                self.admin.addWinnings(self.uid, -100)
                 money = self.playGame()
-                self.player.addWinnings(self.uid, money)
+                self.admin.addWinnings(self.uid, money)
+                self.admin.addGame('Slots', self.uid, money)
                 print(f"You earned: {money}, your balance is now {self.player.getWinnings(self.uid)}")
             else:
                 quit()

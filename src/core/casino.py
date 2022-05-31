@@ -1,54 +1,76 @@
-from src.core.database import Player, PlayerControl
+from src.core.database import *
+from datetime import datetime
+import importlib
 
 class user:
-    def __init__(self, firstName, lastName, idNum):
-        self.firstName = firstName
-        self.lastName = lastName
-        self.uid = idNum
-    
-    def setFirstName(self, name):
-        '''function to return set first name'''
-        self.firstName = name
+    def __init__(self):
+        pass
 
-    def setLastName(self, name):
-        '''function to return set last name'''
-        self.lastName = name
-    
-    def setId(self, idNum):
-        '''function to return set uid'''
-        self.uid = idNum
-    
-    def getFirstName(self):
-        '''function to return first name'''
-        return self.firstName
+    def getWinnings(self, uid):
+        user = Player.select().where(Player.userID == uid).get()
+        return user.winnings
 
-    def getLastName(self):
-        '''function to return last name'''
-        return self.lastName
-
-    def getId(self):
-        '''function to return uid'''
-        return self.uid
-
-class player(user):    
     def checkLogin(self, uid, password):
-        return PlayerControl.checkLogin(uid, password)
+        '''check user login'''
+        try:
+            user = Player.select().where(Player.userID == uid).get()
+            if user.password == password:
+                return True
+            else:
+                return False
+        except Exception as e:
+            return False
 
-    def checkWinnings(self, uid):
-        return PlayerControl.getWinnings()
+class player(user):
+    '''class for player level functions'''
+    pass
 
 class admin(user):
-    def checkLogin(self, uid, password):
-        return PlayerControl.checkLogin(uid, password)
+    '''class to hold admin level functions'''
+    def checkAdmin(self, uid, password):
+        '''check if a user is an admin'''
+        try:
+            user = Player.select().where(Player.userID == uid).get()
+            if user.password == password:
+                if user.admin:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        except Exception as e:
+            return False
 
     def addWinnings(self, uid, winnings):
-        PlayerControl.addWinings(uid, winnings)
+        '''add a negative value to decreate winnings, add a positive value to increate winnings'''
+        user = Player.select().where(Player.userID == uid).get()
+        if(user.winnings == None):
+            user.winnings = (winnings)
+        else:
+            user.winnings = (user.winnings + winnings)
 
-    def checkWinnings(self, uid):
-        return PlayerControl.getWinnings()
+        user.save()
 
-    def addPlayer(self, uid, firstName, lastName):
-        PlayerControl.createPlayer(uid, firstName, lastName)
-    
-    def removeUser(self, uid):
-        return "Function called successfully"
+    def createPlayer(self, uid, fName, lName, pword):
+        Player.create(userID=uid, firstName=fName,
+                      lastName=lName, password=pword)
+
+    def removePlayer(self, uid):
+        Player.delete().where(Player.userID == uid)
+
+    def addGame(self, gameName, uid, win):
+        try:
+            gid = eval(f'{gameName}').select(fn.MAX(eval(f'{gameName}').gameID)).scalar() + 1 #set GID to be highest GID + 1
+        except Exception as e:
+            gid = 0
+        
+        print(gid)
+
+        time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        eval(f'{gameName}').create(gameID=gid,userID=uid, winnings=win, timeStamp=time)
+
+    def removeGame(self, gameName, gid):
+        importlib.import_module(gameName)
+        self.game = eval(f'{gameName}()')
+        self.game.delete().where(self.game.gameID == gid)
