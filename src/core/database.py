@@ -1,11 +1,13 @@
 from peewee import *
 import argparse
 import sys
+from datetime import datetime
 
 db = SqliteDatabase('src/core/casino.db')
 
+
 class Player(Model):
-    userID = IntegerField()
+    userID = IntegerField(unique=True)
     firstName = CharField()
     lastName = CharField()
     password = CharField()
@@ -16,10 +18,13 @@ class Player(Model):
     class Meta:
         database = db
 
+
 class PlayerControl():
-    '''control player database'''    
+    '''control player database'''
+
     def createPlayer(self, uid, fName, lName, pword):
-        Player.create(userID = uid, firstName = fName, lastName = lName, password = pword)
+        Player.create(userID=uid, firstName=fName,
+                      lastName=lName, password=pword)
 
     def removePlayer(self, uid):
         Player.delete().where(Player.userID == uid)
@@ -34,7 +39,7 @@ class PlayerControl():
         if(user.winnings == None):
             user.winnings = (winnings)
         else:
-            user.winnings=(user.winnings + winnings)
+            user.winnings = (user.winnings + winnings)
 
         user.save()
 
@@ -64,18 +69,53 @@ class PlayerControl():
             return False
 
 
+class gameModel(Model):
+    gameID = IntegerField(unique=True) #unique ID of each game
+    userID = IntegerField() #user who played game
+    winnings = FloatField(null=True)
+    timeStamp = DateField(null=True)
+
+    class Meta:
+        database = db
+
+
+class gameController():
+    def __init__(self, gameName):
+        self.game = eval(f'{gameName}()')
+
+    def addGame(self, gid, uid, win, time):
+        newGame = self.game.select().where(self.game.userID == uid).get()
+        newGame.gameID = gid
+        newGame.uid = uid
+        newGame.timeStamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        newGame.winnings = win
+
+        newGame.save()
+
+    def removeGame(self, gid):
+        self.game.delete().where(self.game.gameID == gid)
+
+
+class Slots(gameModel):
+    '''One of these needs to be added for every game, additionally the table needs to be added in main below'''
+    pass
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Create databases or delete databases.")
-    parser.add_argument('createTables', type=bool, help='bool flag, if true then create database tables', default=False)
-    parser.add_argument('dropTables', type=bool, help='bool flag, if true then drop database tables', default=False)
+    parser.add_argument('createTables', type=bool,
+                        help='bool flag, if true then create database tables', default=False)
+    parser.add_argument('dropTables', type=bool,
+                        help='bool flag, if true then drop database tables', default=False)
 
     args = parser.parse_args(sys.argv[1:])
+    db.connect()
 
     if args.createTables == True:
-        Player.create_table()
+        db.create_table([Player, Slots])
         default = PlayerControl()
-        default.createPlayer('admin', 'default', 'default', 'admin')
+        default.createPlayer('admin', 'default', 'default', 'admin') #create a default user admin/admin
     elif args.dropTables == True:
-        Player.drop_table()
+        db.drop_table([Player, Slots])
     else:
         print("No Args specified. Try again.")
