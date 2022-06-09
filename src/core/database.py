@@ -1,49 +1,51 @@
-from numpy import False_
 from peewee import *
 import argparse
 import sys
 
-db = SqliteDatabase('casino.db')
+db = SqliteDatabase('src/core/casino.db')
+
 
 class Player(Model):
-    userID = IntegerField()
+    userID = CharField(unique=True)
     firstName = CharField()
     lastName = CharField()
+    password = CharField()
     winnings = FloatField(null=True)
     banned = BooleanField(null=True)
+    admin = BooleanField(null=True)
+
     class Meta:
         database = db
 
-class PlayerControl():
-    '''control player database'''    
-    def createPlayer(self, uid, fName, lName):
-        Player.create(userID = uid, firstName = fName, lastName = lName).execute()
 
-    def removePlayer(self, uid):
-        Player.delete().where(Player.userID == uid).execute()
+class gameModel(Model):
+    gameID = IntegerField(unique=True) #unique ID of each game
+    userID = CharField() #user who played game
+    winnings = FloatField(null=True)
+    timeStamp = DateField(null=True)
 
-    def getWinnings(self, uid):
-        user = Player.select().where(Player.userID == uid).get()
-        return user.winnings
+    class Meta:
+        database = db
 
-    def addWinings(self, uid, winnings):
-        '''add a negative value to decreate winnings, add a positive value to increate winnings'''
-        user = Player.select().where(Player.userID == uid).get()
-        if(user.winnings == None):
-            Player.update(winnings=(winnings).where(Player.userID == uid)).execute()
-        else:
-            Player.update(winnings=(user.winnings + winnings).where(Player.userID == uid)).execute()
+class Slots(gameModel):
+    '''One of these needs to be added for every game, additionally the table needs to be added in main below'''
+    pass
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Create databases or delete databases.")
-    parser.add_argument('createTables', type=bool, help='bool flag, if true then create database tables', default=False)
-    parser.add_argument('dropTables', type=bool, help='bool flag, if true then drop database tables', default=False)
+    parser.add_argument('mode', type=str,
+                        help='flag, if c then create database tables if d delete')
+
 
     args = parser.parse_args(sys.argv[1:])
+    db.connect()
 
-    if args.createTables == True:
-        Player.create_table()
-    elif args.dropTables == True:
-        Player.drop_table()
+    if args.mode == 'c':
+        db.create_tables([Player, Slots])
+        Player.create(userID='admin', firstName='default',
+            lastName='default', password='admin', admin=True)
+    elif args.mode == 'd':
+        db.drop_tables([Player, Slots])
     else:
         print("No Args specified. Try again.")
