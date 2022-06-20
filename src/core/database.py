@@ -49,3 +49,5 @@ if __name__ == '__main__':
         db.drop_tables([Player, Slots])
     else:
         print("No Args specified. Try again.")
+
+import argparse

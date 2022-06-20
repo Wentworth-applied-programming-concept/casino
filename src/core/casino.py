@@ -56,7 +56,7 @@ class admin(user):
                       lastName=lName, password=pword)
 
     def removePlayer(self, uid):
-        Player.delete().where(Player.userID == uid)
+        Player.delete().where(Player.userID == uid).execute()
 
     def addGame(self, gameName, uid, win):
         try:
