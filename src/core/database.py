@@ -12,7 +12,7 @@ class Player(Model):
     password = CharField()
     winnings = FloatField(null=True)
     banned = BooleanField(null=True)
-    admin = BooleanField(null=True)
+    admin = BooleanField()
 
     class Meta:
         database = db
@@ -45,6 +45,10 @@ if __name__ == '__main__':
         db.create_tables([Player, Slots])
         Player.create(userID='admin', firstName='default',
             lastName='default', password='admin', admin=True)
+        Player.create(userID='bobby123', firstName='Bob',
+            lastName='Dylan', password='admin', winnings=0, admin=False)
+        Player.create(userID='harry4959', firstName='Harry',
+            lastName='Dad', password='admin', winnings=0, admin=False)
     elif args.mode == 'd':
         db.drop_tables([Player, Slots])
     else:

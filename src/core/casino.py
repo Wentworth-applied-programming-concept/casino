@@ -23,7 +23,14 @@ class user:
 
 class player(user):
     '''class for player level functions'''
-    pass
+    def getPlayers(self):
+        '''return player info as dict, excludes admins'''
+        try:
+            players = Player.select().where(Player.admin == False)
+            return players
+        except Exception as e:
+            return None
+        
 
 class admin(user):
     '''class to hold admin level functions'''
