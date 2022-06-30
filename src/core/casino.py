@@ -30,7 +30,22 @@ class player(user):
             return players
         except Exception as e:
             return None
-        
+
+    def updateInfo(self, idVal, uid='', fName='', lName='', pwd='', balance=''):
+        '''update STUDENT, set any vals that should not be changed to null'''
+        usr = Player.select().where(Player.userID == idVal).get()
+        if fName != '':
+            usr.firstName = fName
+        if lName != '':
+            usr.lastName = lName
+        if uid != '':
+            usr.userID = uid
+        if pwd != '':
+            usr.password = pwd
+        if balance != '':
+            usr.winnings = balance
+
+        usr.save()
 
 class admin(user):
     '''class to hold admin level functions'''

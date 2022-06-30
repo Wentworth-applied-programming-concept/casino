@@ -8,39 +8,50 @@ administrator = admin()
 
 class login:
     def __init__(self):
-        root = tk.Tk()
-        root.title('Casino')
-        root.geometry('500x100')
-        root.resizable(False, False)
+        self.root = tk.Tk()
+        self.root.title('Casino')
+        self.root.geometry('500x100')
+        self.root.resizable(False, False)
 
-        frame = ttk.Frame(root)
+        self.frame = ttk.Frame(self.root)
 
         options = {'padx': 5, 'pady': 5}
 
 
-        uname_label = ttk.Label(frame, text='Username')
-        uname_label.grid(column=0, row=0, sticky='W', **options)
+        self.uname_label = ttk.Label(self.frame, text='Username')
+        self.uname_label.grid(column=0, row=0, sticky='W', **options)
 
-        pass_label = ttk.Label(frame, text='Password')
-        pass_label.grid(column=1, row=0, sticky='W', **options)
+        self.pass_label = ttk.Label(self.frame, text='Password')
+        self.pass_label.grid(column=1, row=0, sticky='W', **options)
 
-        username = tk.StringVar()
-        username = ttk.Entry(frame, textvariable=username)
-        username.grid(column=0, row=1, **options)
-        username.focus()
+        self.username = tk.StringVar()
+        self.username = ttk.Entry(self.frame, textvariable=self.username)
+        self.username.grid(column=0, row=1, **options)
+        self.username.focus()
 
-        password = tk.StringVar()
-        password = ttk.Entry(frame, textvariable=username)
-        password.grid(column=1, row=1, **options)
-        password.focus()
+        self.password = tk.StringVar()
+        self.password = ttk.Entry(self.frame, textvariable=self.username)
+        self.password.grid(column=1, row=1, **options)
+        self.password.focus()
 
 
-        def checkLogin():
+        convert_button = ttk.Button(self.frame, text='Login')
+        convert_button.grid(column=2, row=1, sticky='W', **options)
+        convert_button.configure(command=self.checkLogin)
+
+        self.result_label = ttk.Label(self.frame)
+        self.result_label.grid(row=2, columnspan=3, **options)
+
+        self.frame.grid(padx=10, pady=10)
+
+        self.root.mainloop()
+    
+    def checkLogin(self):
             try:
-                login = user.checkLogin(username.get(), password.get())
+                login = user.checkLogin(self.username.get(), self.password.get())
                 if login:
-                    adminCheck = administrator.checkAdmin(username.get(), password.get())
-                    root.destroy() #close login page
+                    adminCheck = administrator.checkAdmin(self.username.get(), self.password.get())
+                    self.root.destroy() #close login page
                     if adminCheck:
                         #launch admin
                         admin()
@@ -49,75 +60,123 @@ class login:
                         pass
                 else:
                     result = f'Invalid Login, Try Again'
-                    result_label.config(text=result)
+                    self.result_label.config(text=result)
             except ValueError as error:
                 showerror(title='Error', message=error)
 
+class table: #abstract table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
+    def __init__(self, window, headers, dataHeaders, size):
+        self.window = window
+        self.headers = headers
+        self.size = size
+        self.dataHeaders = dataHeaders
+        self.treev = ttk.Treeview(self.window, column=self.headers, height=30, selectmode ='browse')
 
-        convert_button = ttk.Button(frame, text='Login')
-        convert_button.grid(column=2, row=1, sticky='W', **options)
-        convert_button.configure(command=checkLogin)
+    def createTable(self):
+        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
+        self.window = self.window
+            
+        for value in self.headers:           
+            self.treev.column(value, width = int(self.size/(len(self.headers))), anchor ='c')
 
-        result_label = ttk.Label(frame)
-        result_label.grid(row=2, columnspan=3, **options)
+            self.treev.heading(value, text =value)
 
-        frame.grid(padx=10, pady=10)
+        self.treev['show'] = 'headings'
 
-        root.mainloop()
+        return self.treev
+
+    def update(self, data):
+        if data is not None: #check if any players are in db
+            for val in data:
+                insertValues = []
+                for count, value in enumerate(self.dataHeaders):
+                    insertValues.append(getattr(val, self.dataHeaders[count]))
+                    
+                if getattr(val, self.dataHeaders[0]) not in self.uidInTable: #check if player is already in table, if not add
+                    self.uidInTable.append(getattr(val, self.dataHeaders[0]))
+                    self.treev.insert("", 'end', values =insertValues)
+                    
+                else: #If name already in table, update table entry
+
+                    for entry in self.treev.get_children():
+                        if getattr(val, self.dataHeaders[0]) in self.treev.item(entry)['values']:
+                            self.treev.item(entry, text="", values =insertValues)
+                        elif self.treev.item(entry)['values'][0] not in [getattr(pl, self.dataHeaders[0]) for pl in data]: #check to see if player was deleted or modified
+                            self.treev.delete(entry)
 
 class admin: #table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
     def __init__(self):
         self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
         self.window = tk.Tk()
         self.window.title('Casino Admin Dashboard')
-        self.window.geometry('1020x900')
+        self.window.geometry('1000x900')
+        self.frame = ttk.Frame(self.window)
 
         self.window.resizable(False, False)
         
-        self.treev = ttk.Treeview(self.window, selectmode ='browse')
-        
-        self.treev.pack(side ='right')
+        self.user_table = table(self.window, ["Username","First Name", "Last Name", "Balance"], ["userID","firstName", "lastName", "winnings"], 1000)
 
-        verscrlbar = ttk.Scrollbar(self.window,
-                                orient ="vertical",
-                                command = self.treev.yview)
-        
-        verscrlbar.pack(side ='right', fill ='x')
-        
-        self.treev.configure(xscrollcommand = verscrlbar.set)
-        
-        self.treev["columns"] = ("1", "2", "3", "4")
-        
-        self.treev['show'] = 'headings'
-        
-        self.treev.column("1", width = 250, anchor ='c')
-        self.treev.column("2", width = 250, anchor ='se')
-        self.treev.column("3", width = 250, anchor ='se')
-        self.treev.column("4", width = 250, anchor ='se')
+        self.user_tree = self.user_table.createTable()
+        self.user_tree.grid(row=1, column=0, sticky=tk.NSEW)
+        self.window.after(1000, self.clock) #callback every 1 second
 
-        self.treev.heading("1", text ="Username")
-        self.treev.heading("2", text ="First Name")
-        self.treev.heading("3", text ="Last Name")
-        self.treev.heading("4", text ="Balance")
+        options = {'padx': 5, 'pady': 5}
 
-        self.update_clock() #update table on clock
+        self.uname_label = ttk.Label(self.frame, text='Update Username:')
+        self.uname_label.grid(column=0, row=2, sticky='W', **options)
+
+        self.pass_label = ttk.Label(self.frame, text='Update Password:')
+        self.pass_label.grid(column=2, row=2, sticky='W', **options)
+
+        self.fname_label = ttk.Label(self.frame, text='Update First Name:')
+        self.fname_label.grid(column=0, row=4, sticky='W', **options)
+
+        self.lname_label = ttk.Label(self.frame, text='Update Last Name:')
+        self.lname_label.grid(column=2, row=4, sticky='W', **options)
+
+        self.balance_label = ttk.Label(self.frame, text='Update Balance:')
+        self.balance_label.grid(column=0, row=6, sticky='W', **options)
+
+        self.userID = tk.StringVar()
+        self.userID = ttk.Entry(self.frame)
+        self.userID.grid(column=0, row=3)
+        self.userID.focus()
+
+        self.password = tk.StringVar()
+        self.password = ttk.Entry(self.frame)
+        self.password.grid(column=2, row=3, **options)
+        self.password.focus()
+
+        self.firstName = tk.StringVar()
+        self.firstName = ttk.Entry(self.frame)
+        self.firstName.grid(column=0, row=5, **options)
+        self.firstName.focus()
+
+        self.lastName = tk.StringVar()
+        self.lastName = ttk.Entry(self.frame)
+        self.lastName.grid(column=2, row=5, **options)
+        self.lastName.focus()
+
+        self.balance = tk.StringVar()
+        self.balance = ttk.Entry(self.frame)
+        self.balance.grid(column=0, row=7, **options)
+        self.balance.focus()
+
+        update_button = ttk.Button(self.frame, text='Update')
+        update_button.grid(column=2, row=7, sticky='e', **options)
+        update_button.configure(command=self.update)
+
+        self.frame.grid(padx=10, pady=10)
+
         self.window.mainloop()
 
-    def update_clock(self):
-        players = user.getPlayers()
-        if players is not None: #check if any players are in db
-            for player in players:
-                if player.userID not in self.uidInTable: #check if player is already in table, if not add
-                    self.uidInTable.append(player.userID)
-                    self.treev.insert("", 'end', values =(player.userID, player.firstName, player.lastName, player.winnings))
-                else: #If name already in table, update table entry
-                    for entry in self.treev.get_children():
-                        if player.userID in  self.treev.item(entry)['values']:
-                            self.treev.item(entry, text="", values =(player.userID, player.firstName, player.lastName, player.winnings))
-                        elif self.treev.item(entry)['values'][0] not in [pl.userID for pl in players]: #check to see if player was deleted or modified
-                            self.treev.delete(entry)
+    def clock(self):
+        self.user_table.update(user.getPlayers())
+        self.window.after(1000,  self.clock) #callback every 1 second
 
-        self.window.after(1000, self.update_clock) #callback every 1 second
+    def update(self):
+        data = self.user_tree.item(self.user_tree.focus(), 'values')
+        user.updateInfo(data[0], self.userID.get(), self.firstName.get(), self.lastName.get(), self.password.get(), self.balance.get())
 
 if __name__=='__main__':
     login()
