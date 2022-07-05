@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import *
 from tkinter import ttk
 from tkinter.messagebox import showerror
 from src.core.casino import player, admin
@@ -30,7 +31,7 @@ class login:
         self.username.focus()
 
         self.password = tk.StringVar()
-        self.password = ttk.Entry(self.frame, textvariable=self.username)
+        self.password = ttk.Entry(self.frame, textvariable=self.username, show="*")
         self.password.grid(column=1, row=1, **options)
         self.password.focus()
 
@@ -54,7 +55,7 @@ class login:
                     self.root.destroy() #close login page
                     if adminCheck:
                         #launch admin
-                        admin()
+                        admin_user_dashboard()
                     else:
                         #TODO: launch user
                         pass
@@ -104,7 +105,7 @@ class table: #abstract table based on https://www.geeksforgeeks.org/python-tkint
                         elif self.treev.item(entry)['values'][0] not in [getattr(pl, self.dataHeaders[0]) for pl in data]: #check to see if player was deleted or modified
                             self.treev.delete(entry)
 
-class admin: #table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
+class admin_user_dashboard: #table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
     def __init__(self):
         self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
         self.window = tk.Tk()
@@ -122,19 +123,19 @@ class admin: #table based on https://www.geeksforgeeks.org/python-tkinter-treevi
 
         options = {'padx': 5, 'pady': 5}
 
-        self.uname_label = ttk.Label(self.frame, text='Update Username:')
+        self.uname_label = ttk.Label(self.frame, text='Username:')
         self.uname_label.grid(column=0, row=2, sticky='W', **options)
 
-        self.pass_label = ttk.Label(self.frame, text='Update Password:')
+        self.pass_label = ttk.Label(self.frame, text='Password:')
         self.pass_label.grid(column=2, row=2, sticky='W', **options)
 
-        self.fname_label = ttk.Label(self.frame, text='Update First Name:')
+        self.fname_label = ttk.Label(self.frame, text='First Name:')
         self.fname_label.grid(column=0, row=4, sticky='W', **options)
 
-        self.lname_label = ttk.Label(self.frame, text='Update Last Name:')
+        self.lname_label = ttk.Label(self.frame, text='Last Name:')
         self.lname_label.grid(column=2, row=4, sticky='W', **options)
 
-        self.balance_label = ttk.Label(self.frame, text='Update Balance:')
+        self.balance_label = ttk.Label(self.frame, text='Balance:')
         self.balance_label.grid(column=0, row=6, sticky='W', **options)
 
         self.userID = tk.StringVar()
@@ -162,21 +163,163 @@ class admin: #table based on https://www.geeksforgeeks.org/python-tkinter-treevi
         self.balance.grid(column=0, row=7, **options)
         self.balance.focus()
 
-        update_button = ttk.Button(self.frame, text='Update')
-        update_button.grid(column=2, row=7, sticky='e', **options)
+
+        update_button = ttk.Button(self.frame, text='Delete User')
+        update_button.grid(column=3, row=3, sticky='e', **options)
+        update_button.configure(command=self.delete)
+
+        update_button = ttk.Button(self.frame, text='Update Existing')
+        update_button.grid(column=3, row=5, sticky='e', **options)
         update_button.configure(command=self.update)
 
+        update_button = ttk.Button(self.frame, text='Add New User')
+        update_button.grid(column=3, row=7, sticky='e', **options)
+        update_button.configure(command=self.add)
+
+
         self.frame.grid(padx=10, pady=10)
+
+        # Based off https://pythonspot.com/tk-menubar/
+        menubar = Menu(self.window)
+        menu = Menu(menubar, tearoff=0)
+        menu.add_command(label="User View", command=None)
+        menu.add_command(label="Admin View", command=self.adminView)
+        menu.add_command(label="Game View", command=None)
+
+        menu.add_separator()
+        menu.add_command(label="Logout", command=self.logout)
+        menubar.add_cascade(label="Menu", menu=menu)
+
+        self.window.config(menu=menubar)
 
         self.window.mainloop()
 
     def clock(self):
         self.user_table.update(user.getPlayers())
-        self.window.after(1000,  self.clock) #callback every 1 second
+        self.window.after(1000, self.clock) #callback every 1 second
 
     def update(self):
         data = self.user_tree.item(self.user_tree.focus(), 'values')
         user.updateInfo(data[0], self.userID.get(), self.firstName.get(), self.lastName.get(), self.password.get(), self.balance.get())
+    
+    def delete(self):
+        data = self.user_tree.item(self.user_tree.focus(), 'values')
+        user.removePlayer(data[0])
+        self.user_tree.delete(self.user_tree.focus())
+    
+    def add(self):
+        user.createPlayer(self.userID.get(), self.firstName.get(), self.lastName.get(), self.password.get(), self.balance.get())
 
+    def adminView(self):
+        self.window.destroy()
+        admin_admin_dashboard()
+
+    def logout(self):
+        self.window.destroy()
+        login()
+
+class admin_admin_dashboard: #table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
+    def __init__(self):
+        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
+        self.window = tk.Tk()
+        self.window.title('Casino Admin Dashboard')
+        self.window.geometry('1000x900')
+        self.frame = ttk.Frame(self.window)
+
+        self.window.resizable(False, False)
+        
+        self.user_table = table(self.window, ["Username","First Name", "Last Name"], ["userID","firstName", "lastName"], 1000)
+
+        self.user_tree = self.user_table.createTable()
+        self.user_tree.grid(row=1, column=0, sticky=tk.NSEW)
+        self.window.after(1000, self.clock) #callback every 1 second
+
+        options = {'padx': 5, 'pady': 5}
+
+        self.uname_label = ttk.Label(self.frame, text='Username:')
+        self.uname_label.grid(column=0, row=2, sticky='W', **options)
+
+        self.pass_label = ttk.Label(self.frame, text='Password:')
+        self.pass_label.grid(column=2, row=2, sticky='W', **options)
+
+        self.fname_label = ttk.Label(self.frame, text='First Name:')
+        self.fname_label.grid(column=0, row=4, sticky='W', **options)
+
+        self.lname_label = ttk.Label(self.frame, text='Last Name:')
+        self.lname_label.grid(column=2, row=4, sticky='W', **options)
+
+        self.userID = tk.StringVar()
+        self.userID = ttk.Entry(self.frame)
+        self.userID.grid(column=0, row=3)
+        self.userID.focus()
+
+        self.password = tk.StringVar()
+        self.password = ttk.Entry(self.frame)
+        self.password.grid(column=2, row=3, **options)
+        self.password.focus()
+
+        self.firstName = tk.StringVar()
+        self.firstName = ttk.Entry(self.frame)
+        self.firstName.grid(column=0, row=5, **options)
+        self.firstName.focus()
+
+        self.lastName = tk.StringVar()
+        self.lastName = ttk.Entry(self.frame)
+        self.lastName.grid(column=2, row=5, **options)
+        self.lastName.focus()
+
+        update_button = ttk.Button(self.frame, text='Delete User')
+        update_button.grid(column=3, row=3, sticky='e', **options)
+        update_button.configure(command=self.delete)
+
+        update_button = ttk.Button(self.frame, text='Update Existing')
+        update_button.grid(column=3, row=5, sticky='e', **options)
+        update_button.configure(command=self.update)
+
+        update_button = ttk.Button(self.frame, text='Add New User')
+        update_button.grid(column=3, row=7, sticky='e', **options)
+        update_button.configure(command=self.add)
+
+
+        self.frame.grid(padx=10, pady=10)
+
+        # Based off https://pythonspot.com/tk-menubar/
+        menubar = Menu(self.window)
+        menu = Menu(menubar, tearoff=0)
+        menu.add_command(label="User View", command=self.userView)
+        menu.add_command(label="Game View", command=None)
+
+        menu.add_separator()
+        menu.add_command(label="Logout", command=self.logout)
+        menubar.add_cascade(label="Menu", menu=menu)
+
+        self.window.config(menu=menubar)
+
+        self.window.mainloop()
+
+    def clock(self):
+        self.user_table.update(administrator.getAdmins())
+        self.window.after(1000, self.clock) #callback every 1 second
+
+    def update(self):
+        data = self.user_tree.item(self.user_tree.focus(), 'values')
+        administrator.updateAdminInfo(data[0], self.userID.get(), self.firstName.get(), self.lastName.get(), self.password.get())
+    
+    def delete(self):
+        data = self.user_tree.item(self.user_tree.focus(), 'values')
+        user.removePlayer(data[0])
+        self.user_tree.delete(self.user_tree.focus())
+    
+    def add(self):
+        administrator.createAdmin(self.userID.get(), self.firstName.get(), self.lastName.get(), self.password.get())
+
+    def userView(self):
+        self.window.destroy()
+        admin_user_dashboard()
+
+    def logout(self):
+        self.window.destroy()
+        login()
+        
 if __name__=='__main__':
     login()

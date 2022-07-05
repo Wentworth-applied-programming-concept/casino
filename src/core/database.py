@@ -17,7 +17,6 @@ class Player(Model):
     class Meta:
         database = db
 
-
 class gameModel(Model):
     gameID = IntegerField(unique=True) #unique ID of each game
     userID = CharField() #user who played game
@@ -30,7 +29,6 @@ class gameModel(Model):
 class Slots(gameModel):
     '''One of these needs to be added for every game, additionally the table needs to be added in main below'''
     pass
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Create databases or delete databases.")
@@ -53,5 +51,3 @@ if __name__ == '__main__':
         db.drop_tables([Player, Slots])
     else:
         print("No Args specified. Try again.")
-
-import argparse

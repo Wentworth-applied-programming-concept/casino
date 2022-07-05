@@ -47,6 +47,13 @@ class player(user):
 
         usr.save()
 
+    def createPlayer(self, uid, fName, lName, pword, bal):
+        Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, winnings=bal, admin=False)
+
+    def removePlayer(self, uid):
+        Player.delete().where(Player.userID == uid).execute()
+
+
 class admin(user):
     '''class to hold admin level functions'''
     def checkAdmin(self, uid, password):
@@ -63,6 +70,31 @@ class admin(user):
         except Exception as e:
             return False
 
+    def getAdmins(self):
+        '''return admins as dict'''
+        try:
+            players = Player.select().where(Player.admin == True)
+            return players
+        except Exception as e:
+            return None
+
+    def createAdmin(self, uid, fName, lName, pword):
+        Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, admin=True)
+
+    def updateAdminInfo(self, idVal, uid='', fName='', lName='', pwd=''):
+        '''update STUDENT, set any vals that should not be changed to null'''
+        usr = Player.select().where(Player.userID == idVal).get()
+        if fName != '':
+            usr.firstName = fName
+        if lName != '':
+            usr.lastName = lName
+        if uid != '':
+            usr.userID = uid
+        if pwd != '':
+            usr.password = pwd
+
+        usr.save()
+
     def addWinnings(self, uid, winnings):
         '''add a negative value to decreate winnings, add a positive value to increate winnings'''
         user = Player.select().where(Player.userID == uid).get()
@@ -72,13 +104,6 @@ class admin(user):
             user.winnings = (user.winnings + winnings)
 
         user.save()
-
-    def createPlayer(self, uid, fName, lName, pword):
-        Player.create(userID=uid, firstName=fName,
-                      lastName=lName, password=pword)
-
-    def removePlayer(self, uid):
-        Player.delete().where(Player.userID == uid).execute()
 
     def addGame(self, gameName, uid, win):
         try:
