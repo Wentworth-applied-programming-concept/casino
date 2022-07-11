@@ -1,9 +1,11 @@
+import enum
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 from tkinter.messagebox import showerror
 from src.core.casino import player, admin
 import json
+import importlib
 
 user = player()
 administrator = admin()
@@ -66,156 +68,6 @@ class login:
             except ValueError as error:
                 showerror(title='Error', message=error)
 
-class player_menu_bar:
-    def __init__(self, window):
-        # Based off https://pythonspot.com/tk-menubar/
-        self.window = window
-
-        self.menubar = Menu(self.window)
-        self.menu = Menu(self.menubar, tearoff=0)
-        self.menu.add_command(label="Main", command=self.userView)
-        self.menu.add_command(label="Game History", command=self.gameHistory)
-        self.menu.add_command(label="Launch Games", command=self.gameSelection)
-        self.menu.add_separator()
-        self.menu.add_command(label="Logout", command=self.logout)
-
-        self.menubar.add_cascade(label="Menu", menu=self.menu)
-        self.window.config(menu=self.menubar)
-
-    def userView(self):
-        self.window.destroy()
-        player()
-
-    def gameHistory(self):
-        self.window.destroy()
-        player_game_view()
-
-    def gameSelection(self):
-        self.window.destroy()
-        player_game_view()
-
-    def logout(self):
-        self.window.destroy()
-        login()
-
-
-class player:
-    def __init__(self, uid):
-        self.uid = uid
-
-        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
-        self.window = tk.Tk()
-        self.window.title('Casino User Dashboard')
-        self.window.geometry('400x500')
-        self.frame = ttk.Frame(self.window)
-
-        self.window.resizable(False, False)
-        player_menu_bar(self.window)
-        
-        options = {'padx': 5, 'pady': 5}
-
-
-        self.welcome_label = ttk.Label(self.frame, text=f"Welcome {self.uid}!", font='Helvetica 18 bold')
-        self.welcome_label.grid(column=0, row=0, columnspan = 2, sticky='W', **options)
-
-        self.update_lab = ttk.Label(self.frame, text=f"Change your settings")
-        self.update_lab.grid(column=0, row=1, columnspan = 2, sticky='W', **options)
-
-        self.uname_label = ttk.Label(self.frame, text='Username:')
-        self.uname_label.grid(column=0, row=2, sticky='W', **options)
-
-        self.pass_label = ttk.Label(self.frame, text='Password:')
-        self.pass_label.grid(column=1, row=2, sticky='W', **options)
-
-        self.fname_label = ttk.Label(self.frame, text='First Name:')
-        self.fname_label.grid(column=0, row=4, sticky='W', **options)
-
-        self.lname_label = ttk.Label(self.frame, text='Last Name:')
-        self.lname_label.grid(column=1, row=4, sticky='W', **options)
-
-        self.balance_label = ttk.Label(self.frame, text='Balance:')
-        self.balance_label.grid(column=0, row=6, sticky='W', **options)
-
-        self.userID = tk.StringVar()
-        self.userID = ttk.Entry(self.frame)
-        self.userID.grid(column=0, row=3)
-        self.userID.focus()
-
-        self.password = tk.StringVar()
-        self.password = ttk.Entry(self.frame)
-        self.password.grid(column=1, row=3, **options)
-        self.password.focus()
-
-        self.firstName = tk.StringVar()
-        self.firstName = ttk.Entry(self.frame)
-        self.firstName.grid(column=0, row=5, **options)
-        self.firstName.focus()
-
-        self.lastName = tk.StringVar()
-        self.lastName = ttk.Entry(self.frame)
-        self.lastName.grid(column=1, row=5, **options)
-        self.lastName.focus()
-
-        self.balance = tk.StringVar()
-        self.balance = ttk.Entry(self.frame)
-        self.balance.grid(column=0, row=7, **options)
-        self.balance.focus()
-
-
-        update_button = ttk.Button(self.frame, text='Update Info')
-        update_button.grid(column=1, row=7, sticky='e', **options)
-        update_button.configure(command=self.update)
-
-        self.frame.grid(padx=10, pady=10)
-
-        self.window.mainloop()
-
-    def clock(self):
-        self.user_table.update(user.getPlayers())
-        self.window.after(1000, self.clock) #callback every 1 second
-
-    def update(self):
-        user.updateInfo(self.uid, self.userID.get(), self.firstName.get(), self.lastName.get(), self.password.get())
-    
-class navbar:
-    def __init__(self, window):
-        # Based off https://pythonspot.com/tk-menubar/
-        self.window = window
-
-        self.menubar = Menu(self.window)
-        self.menu = Menu(self.menubar, tearoff=0)
-        self.menu.add_command(label="Player View", command=self.userView)
-        self.menu.add_command(label="Admin View", command=self.adminView)
-        self.menu.add_separator()
-        self.menu.add_command(label="Logout", command=self.logout)
-
-        self.games = Menu(self.menubar, tearoff=0)
-        with open('src/games/games.json') as data:
-            self.gameList = json.load(data)
-
-        for game in self.gameList['games']:
-            self.games.add_command(label=game, command=lambda:self.gameView(game))
-
-        self.menubar.add_cascade(label="Users", menu=self.menu)
-        self.menubar.add_cascade(label="Games", menu=self.games)
-        self.window.config(menu=self.menubar)
-
-    def userView(self):
-        self.window.destroy()
-        admin_user_dashboard()
-
-    def gameView(self, game):
-        self.window.destroy()
-        games(game)
-    
-    def adminView(self):
-        self.window.destroy()
-        admin_admin_dashboard()
-
-    def logout(self):
-        self.window.destroy()
-        login()
-
 class table: #abstract table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
     def __init__(self, window, headers, dataHeaders, size):
         self.window = window
@@ -256,6 +108,212 @@ class table: #abstract table based on https://www.geeksforgeeks.org/python-tkint
                         elif self.treev.item(entry)['values'][0] not in [getattr(pl, self.dataHeaders[0]) for pl in data]: #check to see if player was deleted or modified
                             self.treev.delete(entry)
 
+class admin_menu_bar:
+    def __init__(self, window):
+        # Based off https://pythonspot.com/tk-menubar/
+        self.window = window
+
+        self.menubar = Menu(self.window)
+        self.menu = Menu(self.menubar, tearoff=0)
+        self.menu.add_command(label="Player View", command=self.userView)
+        self.menu.add_command(label="Admin View", command=self.adminView)
+        self.menu.add_command(label="Game History", command=self.gameView)
+
+        self.menu.add_separator()
+        self.menu.add_command(label="Logout", command=self.logout)
+
+        self.menubar.add_cascade(label="Menu", menu=self.menu)
+        self.window.config(menu=self.menubar)
+
+    def userView(self):
+        self.window.destroy()
+        admin_user_dashboard()
+
+    def gameView(self):
+        self.window.destroy()
+        admin_game_history()
+    
+    def adminView(self):
+        self.window.destroy()
+        admin_admin_dashboard()
+
+    def logout(self):
+        self.window.destroy()
+        login()
+
+class player_menu_bar:
+    def __init__(self, window, uid):
+        # Based off https://pythonspot.com/tk-menubar/
+        self.uid = uid
+
+        self.window = window
+        self.menubar = Menu(self.window)
+        self.menu = Menu(self.menubar, tearoff=0)
+        self.menu.add_command(label="Main", command=self.userView)
+        self.menu.add_command(label="Game History", command=self.gameHistory)
+        self.menu.add_command(label="Launch Games", command=self.gameSelection)
+        self.menu.add_separator()
+        self.menu.add_command(label="Logout", command=self.logout)
+
+        self.menubar.add_cascade(label="Menu", menu=self.menu)
+        self.window.config(menu=self.menubar)
+
+    def userView(self):
+        self.window.destroy()
+        player(self.uid)
+
+    def gameHistory(self):
+        self.window.destroy()
+        player_game_history(self.uid)
+
+    def gameSelection(self):
+        self.window.destroy()
+        player_game_selection(self.uid)
+
+    def logout(self):
+        self.window.destroy()
+        login()
+
+
+class player:
+    def __init__(self, uid):
+        self.uid = uid
+
+        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
+        self.window = tk.Tk()
+        self.window.title('Casino User Dashboard')
+        self.window.geometry('400x500')
+        self.frame = ttk.Frame(self.window)
+
+        self.window.resizable(False, False)
+        player_menu_bar(self.window, self.uid)
+        
+        options = {'padx': 5, 'pady': 5}
+
+
+        self.welcome_label = ttk.Label(self.frame, text=f"Welcome {self.uid}!", font='Helvetica 18 bold')
+        self.welcome_label.grid(column=0, row=0, columnspan = 2, sticky='W', **options)
+
+        self.update_lab = ttk.Label(self.frame, text=f"Change your settings")
+        self.update_lab.grid(column=0, row=1, columnspan = 2, sticky='W', **options)
+
+        self.uname_label = ttk.Label(self.frame, text='Username:')
+        self.uname_label.grid(column=0, row=2, sticky='W', **options)
+
+        self.pass_label = ttk.Label(self.frame, text='Password:')
+        self.pass_label.grid(column=1, row=2, sticky='W', **options)
+
+        self.fname_label = ttk.Label(self.frame, text='First Name:')
+        self.fname_label.grid(column=0, row=4, sticky='W', **options)
+
+        self.lname_label = ttk.Label(self.frame, text='Last Name:')
+        self.lname_label.grid(column=1, row=4, sticky='W', **options)
+
+        self.userID = tk.StringVar()
+        self.userID = ttk.Entry(self.frame)
+        self.userID.grid(column=0, row=3)
+        self.userID.focus()
+
+        self.password = tk.StringVar()
+        self.password = ttk.Entry(self.frame)
+        self.password.grid(column=1, row=3, **options)
+        self.password.focus()
+
+        self.firstName = tk.StringVar()
+        self.firstName = ttk.Entry(self.frame)
+        self.firstName.grid(column=0, row=5, **options)
+        self.firstName.focus()
+
+        self.lastName = tk.StringVar()
+        self.lastName = ttk.Entry(self.frame)
+        self.lastName.grid(column=1, row=5, **options)
+        self.lastName.focus()
+
+        update_button = ttk.Button(self.frame, text='Update Info')
+        update_button.grid(column=1, row=7, sticky='e', **options)
+        update_button.configure(command=self.update)
+
+        self.frame.grid(padx=10, pady=10)
+
+        self.window.mainloop()
+
+    def clock(self):
+        self.user_table.update(user.getPlayers())
+        self.window.after(1000, self.clock) #callback every 1 second
+
+    def update(self):
+        user.updateInfo(self.uid, self.userID.get(), self.firstName.get(), self.lastName.get(), self.password.get())
+
+class player_game_history:
+    def __init__(self, uid):
+        self.uid = uid
+
+        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
+        self.window = tk.Tk()
+        self.window.title('Player Game History')
+        self.window.geometry('1000x900')
+        self.frame = ttk.Frame(self.window)
+
+        self.window.resizable(False, False)
+        player_menu_bar(self.window, self.uid)
+        
+        self.user_table = table(self.window, ["Game","Winnings", "Time Stamp"], ["gameType", "winnings", "timeStamp"], 1000)
+
+        self.user_tree = self.user_table.createTable()
+        self.user_tree.grid(row=1, column=0, sticky=tk.NSEW)
+        self.window.after(1000, self.clock) #callback every 1 second
+
+        self.frame.grid(padx=10, pady=10)
+
+        self.window.mainloop()
+
+    def clock(self):
+        self.user_table.update(administrator.getGameByPlayer(self.uid))
+        self.window.after(1000, self.clock) #callback every 1 second
+
+    def update(self):
+        user.updateInfo(self.uid, self.userID.get(), self.firstName.get(), self.lastName.get(), self.password.get())
+
+class player_game_selection:
+    def __init__(self, uid):
+        self.uid = uid
+
+        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
+        self.window = tk.Tk()
+        self.window.title('Game Launcher')
+        self.window.geometry('180x400')
+        self.frame = ttk.Frame(self.window)
+
+        self.window.resizable(False, False)
+        player_menu_bar(self.window, self.uid)
+        
+        options = {'padx': 5, 'pady': 5}
+
+        self.label = []
+        self.button = []
+
+        with open('src/games/games.json') as data:
+            self.gameList = json.load(data)
+
+        for count, game in enumerate(self.gameList['games']):
+            self.label.append(ttk.Label(self.frame, text=game))
+            self.label[count].grid(column=0, row=count, columnspan = 2, sticky='W', **options)
+
+            self.button.append(ttk.Button(self.frame, text='Play'))
+            self.button[count].grid(column=2, row=count, sticky='e', **options)
+            self.button[count].configure(command=lambda: self.launch(game))
+
+
+        self.frame.grid(padx=10, pady=10)
+
+        self.window.mainloop()
+
+    def launch(self, game):
+        self.window.destroy()
+        importlib.import_module(f'src.games.{game}')
+        eval(f'src.games.{game}.{game}(self.uid)')
+
+
 class admin_user_dashboard: #table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
     def __init__(self):
         self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
@@ -263,7 +321,7 @@ class admin_user_dashboard: #table based on https://www.geeksforgeeks.org/python
         self.window.title('Casino Admin Dashboard')
         self.window.geometry('1000x900')
         self.frame = ttk.Frame(self.window)
-        self.navbar = navbar(self.window)
+        self.navbar = admin_menu_bar(self.window)
 
         self.window.resizable(False, False)
         
@@ -356,7 +414,7 @@ class admin_admin_dashboard: #table based on https://www.geeksforgeeks.org/pytho
         self.window.title('Casino Admin Dashboard')
         self.window.geometry('1000x900')
         self.frame = ttk.Frame(self.window)
-        self.navbar = navbar(self.window)
+        self.navbar = admin_menu_bar(self.window)
 
         self.window.resizable(False, False)
         
@@ -433,18 +491,18 @@ class admin_admin_dashboard: #table based on https://www.geeksforgeeks.org/pytho
     def add(self):
         administrator.createAdmin(self.userID.get(), self.firstName.get(), self.lastName.get(), self.password.get())
 
-class games:
-    def __init__(self, gameName):
+class admin_game_history:
+    def __init__(self):
         self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
         self.window = tk.Tk()
         self.window.title('Casino Admin Dashboard')
         self.window.geometry('1000x900')
         self.frame = ttk.Frame(self.window)
-        self.gameName = gameName
-        self.window.resizable(False, False)
-        self.navbar = navbar(self.window)
 
-        self.user_table = table(self.window, ["ID","Player", "Winnings", "Time"], ["gameID","userID", "winnings", "timeStamp"], 1000)
+        self.window.resizable(False, False)
+        self.navbar = admin_menu_bar(self.window)
+
+        self.user_table = table(self.window, ["Game","Player", "Winnings", "Time"], ["gameType","userID", "winnings", "timeStamp"], 1000)
 
         self.user_tree = self.user_table.createTable()
         self.user_tree.grid(row=1, column=0, sticky=tk.NSEW)
@@ -455,7 +513,7 @@ class games:
         self.window.mainloop()
 
     def clock(self):
-        self.user_table.update(administrator.getGame(self.gameName))
+        self.user_table.update(administrator.getGameHistory())
         self.window.after(1000, self.clock) #callback every 1 second
 
 if __name__=='__main__':

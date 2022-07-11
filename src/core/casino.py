@@ -114,27 +114,19 @@ class admin(user):
 
     def addGame(self, gameName, uid, win):
         try:
-            gid = eval(f'{gameName}').select(fn.MAX(eval(f'{gameName}').gameID)).scalar() + 1 #set GID to be highest GID + 1
+            time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            game.create(gameType=gameName, userID=uid, winnings=win, timeStamp=time)
         except Exception as e:
-            gid = 0
-        
-        print(gid)
+            print("Error: ", e)
 
-        time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    def getGameHistory(self):
+        return game.select()
 
-        eval(f'{gameName}').create(gameID=gid,userID=uid, winnings=win, timeStamp=time)
-    
-    def getGame(self, gameName):
-        return eval(f'{gameName}').select().order_by(eval(f'{gameName}').gameID.desc())
+    def getGameByName(self, gameName):
+        return game.select().where(game.gameType == gameName)
 
-    def getPlayerHistory(self, uid):
-        '''returns a list of all games played by a user'''
-        with open('src/games/games.json') as data:
-            self.gameList = json.load(data)
-        for game in self.gameList:
-            obj.update(eval(f'{gameName}').select()) #create combined object of all games
-        return obj
+    def getGameByPlayer(self, uid):
+        return game.select().where(game.userID == uid)
 
     def removeGame(self, gameName, gid):
-        self.game = eval(f'{gameName}()')
-        self.game.delete().where(self.game.gameID == gid)
+        game.delete().where(game.gameType == gameName).where(game.id == gid).execute()
