@@ -47,6 +47,13 @@ class player(user):
 
         usr.save()
 
+    def getNameFromUID(self, uid):
+        try:
+            player = Player.select().where(Player.userID == uid).get()
+            return player.firstName + ' ' + player.lastName
+        except Exception as e:
+            return None
+
     def createPlayer(self, uid, fName, lName, pword, bal):
         Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, winnings=bal, admin=False)
 
@@ -116,8 +123,18 @@ class admin(user):
         time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         eval(f'{gameName}').create(gameID=gid,userID=uid, winnings=win, timeStamp=time)
+    
+    def getGame(self, gameName):
+        return eval(f'{gameName}').select().order_by(eval(f'{gameName}').gameID.desc())
+
+    def getPlayerHistory(self, uid):
+        '''returns a list of all games played by a user'''
+        with open('src/games/games.json') as data:
+            self.gameList = json.load(data)
+        for game in self.gameList:
+            obj.update(eval(f'{gameName}').select()) #create combined object of all games
+        return obj
 
     def removeGame(self, gameName, gid):
-        importlib.import_module(gameName)
         self.game = eval(f'{gameName}()')
         self.game.delete().where(self.game.gameID == gid)
