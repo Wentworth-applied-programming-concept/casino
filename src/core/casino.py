@@ -130,3 +130,36 @@ class admin(user):
 
     def removeGame(self, gameName, gid):
         game.delete().where(game.gameType == gameName).where(game.id == gid).execute()
+
+    def checkPlayerBalance(self, uid):
+        user = Player.select().where(Player.userID == uid).get()
+        return user.winnings
+    
+    def generateGraphData(self, uid = "", gameName = "", startTime = "", endTime = ""):
+        try:
+            if uid != "":
+                if gameName != "":
+                    if startTime != "" and endTime != "":
+                        return game.select().where(game.userID == uid).where(game.gameType == gameName).where(game.timeStamp < endTime).where(game.timeStamp > startTime)
+                    else:
+                        return game.select().where(game.userID == uid).where(game.gameType == gameName)
+                else:
+                    if startTime != "" and endTime != "":
+                        return game.select().where(game.userID == uid).where(game.timeStamp < endTime).where(game.timeStamp > startTime)
+                    else:
+                        return game.select().where(game.userID == uid)
+            else:
+                if gameName != "":
+                    if startTime != "" and endTime != "":
+                        return game.select().where(game.gameType == gameName).where(game.timeStamp < endTime).where(game.timeStamp > startTime)
+                    else:
+                        return game.select().where(game.gameType == gameName)
+                else:
+                    if startTime != "" and endTime != "":
+                        return game.select().where(game.timeStamp < endTime).where(game.timeStamp > startTime)
+                    else:
+                        return game.select()
+
+        except Exception as e:
+            print("Error: ", e)
+            return None

@@ -18,7 +18,7 @@ class Player(Model):
         database = db
 
 class game(Model):
-    gameType = CharField(unique=True) #unique ID of each game
+    gameType = CharField() #unique ID of each game
     userID = CharField() #user who played game
     winnings = FloatField(null=True)
     timeStamp = DateField(null=True)

@@ -6,7 +6,7 @@ class slots:
     def __init__(self, uid):
         self.player = player()
         self.admin = admin()
-        self.uid = userID
+        self.uid = uid
 
         run = True
 

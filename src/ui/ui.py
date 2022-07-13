@@ -6,6 +6,8 @@ from tkinter.messagebox import showerror
 from src.core.casino import player, admin
 import json
 import importlib
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 user = player()
 administrator = admin()
@@ -118,6 +120,7 @@ class admin_menu_bar:
         self.menu.add_command(label="Player View", command=self.userView)
         self.menu.add_command(label="Admin View", command=self.adminView)
         self.menu.add_command(label="Game History", command=self.gameView)
+        self.menu.add_command(label="Generate Graphs", command=self.graph)
 
         self.menu.add_separator()
         self.menu.add_command(label="Logout", command=self.logout)
@@ -136,6 +139,10 @@ class admin_menu_bar:
     def adminView(self):
         self.window.destroy()
         admin_admin_dashboard()
+    
+    def graph(self):
+        self.window.destroy()
+        admin_graph()
 
     def logout(self):
         self.window.destroy()
@@ -179,7 +186,6 @@ class player:
     def __init__(self, uid):
         self.uid = uid
 
-        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
         self.window = tk.Tk()
         self.window.title('Casino User Dashboard')
         self.window.geometry('400x500')
@@ -194,39 +200,43 @@ class player:
         self.welcome_label = ttk.Label(self.frame, text=f"Welcome {self.uid}!", font='Helvetica 18 bold')
         self.welcome_label.grid(column=0, row=0, columnspan = 2, sticky='W', **options)
 
+        self.balance_label = ttk.Label(self.frame, text=f"Your balance is: {administrator.checkPlayerBalance(self.uid)}", font='Helvetica 12 bold')
+        self.balance_label.grid(column=0, row=1, columnspan = 2, sticky='W', **options)
+
+
         self.update_lab = ttk.Label(self.frame, text=f"Change your settings")
-        self.update_lab.grid(column=0, row=1, columnspan = 2, sticky='W', **options)
+        self.update_lab.grid(column=0, row=2, columnspan = 2, sticky='W', **options)
 
         self.uname_label = ttk.Label(self.frame, text='Username:')
-        self.uname_label.grid(column=0, row=2, sticky='W', **options)
+        self.uname_label.grid(column=0, row=3, sticky='W', **options)
 
         self.pass_label = ttk.Label(self.frame, text='Password:')
-        self.pass_label.grid(column=1, row=2, sticky='W', **options)
+        self.pass_label.grid(column=1, row=3, sticky='W', **options)
 
         self.fname_label = ttk.Label(self.frame, text='First Name:')
-        self.fname_label.grid(column=0, row=4, sticky='W', **options)
+        self.fname_label.grid(column=0, row=5, sticky='W', **options)
 
         self.lname_label = ttk.Label(self.frame, text='Last Name:')
-        self.lname_label.grid(column=1, row=4, sticky='W', **options)
+        self.lname_label.grid(column=1, row=5, sticky='W', **options)
 
         self.userID = tk.StringVar()
         self.userID = ttk.Entry(self.frame)
-        self.userID.grid(column=0, row=3)
+        self.userID.grid(column=0, row=4)
         self.userID.focus()
 
         self.password = tk.StringVar()
         self.password = ttk.Entry(self.frame)
-        self.password.grid(column=1, row=3, **options)
+        self.password.grid(column=1, row=4, **options)
         self.password.focus()
 
         self.firstName = tk.StringVar()
         self.firstName = ttk.Entry(self.frame)
-        self.firstName.grid(column=0, row=5, **options)
+        self.firstName.grid(column=0, row=6, **options)
         self.firstName.focus()
 
         self.lastName = tk.StringVar()
         self.lastName = ttk.Entry(self.frame)
-        self.lastName.grid(column=1, row=5, **options)
+        self.lastName.grid(column=1, row=6, **options)
         self.lastName.focus()
 
         update_button = ttk.Button(self.frame, text='Update Info')
@@ -248,7 +258,6 @@ class player_game_history:
     def __init__(self, uid):
         self.uid = uid
 
-        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
         self.window = tk.Tk()
         self.window.title('Player Game History')
         self.window.geometry('1000x900')
@@ -278,7 +287,6 @@ class player_game_selection:
     def __init__(self, uid):
         self.uid = uid
 
-        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
         self.window = tk.Tk()
         self.window.title('Game Launcher')
         self.window.geometry('180x400')
@@ -310,13 +318,12 @@ class player_game_selection:
 
     def launch(self, game):
         self.window.destroy()
-        importlib.import_module(f'src.games.{game}')
-        eval(f'src.games.{game}.{game}(self.uid)')
+        mod = importlib.import_module(f'src.games.{game}')
+        eval('mod.' + game + '(self.uid)')
 
 
 class admin_user_dashboard: #table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
     def __init__(self):
-        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
         self.window = tk.Tk()
         self.window.title('Casino Admin Dashboard')
         self.window.geometry('1000x900')
@@ -409,7 +416,6 @@ class admin_user_dashboard: #table based on https://www.geeksforgeeks.org/python
 
 class admin_admin_dashboard: #table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
     def __init__(self):
-        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
         self.window = tk.Tk()
         self.window.title('Casino Admin Dashboard')
         self.window.geometry('1000x900')
@@ -493,7 +499,6 @@ class admin_admin_dashboard: #table based on https://www.geeksforgeeks.org/pytho
 
 class admin_game_history:
     def __init__(self):
-        self.uidInTable = [] #list of uids already in table so users do not getting added multiple times
         self.window = tk.Tk()
         self.window.title('Casino Admin Dashboard')
         self.window.geometry('1000x900')
@@ -515,6 +520,100 @@ class admin_game_history:
     def clock(self):
         self.user_table.update(administrator.getGameHistory())
         self.window.after(1000, self.clock) #callback every 1 second
+
+class admin_graph:
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title('Casino Admin Dashboard')
+        self.window.geometry('1000x900')
+        self.frame = ttk.Frame(self.window)
+        self.navbar = admin_menu_bar(self.window)
+
+        self.window.resizable(False, False)
+
+        options = {'padx': 5, 'pady': 5}
+
+        self.welcome_label = ttk.Label(self.frame, text=f"Fill out any combination of the following options:", font='Helvetica 12 bold')
+        self.welcome_label.grid(column=0, row=0, columnspan = 2, sticky='W', **options)
+
+        self.uname_label = ttk.Label(self.frame, text='Username:')
+        self.uname_label.grid(column=0, row=2, sticky='W', **options)
+
+        self.game_label = ttk.Label(self.frame, text='Game:')
+        self.game_label.grid(column=2, row=2, sticky='W', **options)
+
+        self.time_label = ttk.Label(self.frame, text='Time Range as yyyy/mm/dd-yyyy/mm/dd:')
+        self.time_label.grid(column=0, row=4, sticky='W', **options)
+
+        self.dataPoints = ttk.Label(self.frame, text='Number of data points to show:')
+        self.dataPoints.grid(column=2, row=4, sticky='W', **options)
+
+        self.userID = tk.StringVar()
+        self.userID = ttk.Entry(self.frame)
+        self.userID.grid(column=0, row=3)
+        self.userID.focus()
+
+        self.game = tk.StringVar()
+        self.game = ttk.Entry(self.frame)
+        self.game.grid(column=2, row=3, **options)
+        self.game.focus()
+
+        self.time = tk.StringVar()
+        self.time = ttk.Entry(self.frame)
+        self.time.grid(column=0, row=5, **options)
+        self.time.focus()
+
+        self.dataPoints = tk.StringVar()
+        self.dataPoints = ttk.Entry(self.frame)
+        self.dataPoints.grid(column=2, row=5, **options)
+        self.dataPoints.focus()
+
+        update_button = ttk.Button(self.frame, text='Generate Graph')
+        update_button.grid(column=2, row=6, sticky='e', **options)
+        update_button.configure(command=self.generate)
+
+
+
+        self.frame.grid(padx=10, pady=10)
+
+        self.window.mainloop()
+
+
+    def generate(self):
+        try:
+            if self.time.get() != "":
+                dates = self.time.get().split('-')
+                startDates = dates[0].split('/')
+                endDates = dates[1].split('/')
+                start = datetime.datetime(int(startDates[0]), int(startDates[1]), int(startDates[2]))
+                end = datetime.datetime(int(endDates[0]), int(endDates[1]), int(endDates[2]))
+            else:
+                start = ""
+                end = ""
+
+            data = administrator.generateGraphData(self.userID.get(), self.game.get(), start, end)
+            
+            times = []
+            winnings = []
+            for val in data:
+                times.append(val.timeStamp)
+                winnings.append(val.winnings)
+
+            if self.game.get() != "":
+                dp = -1*int(self.dataPoints.get())
+            else:
+                dp = -5
+            winnings = winnings[dp:]
+            times = times[dp:]
+
+            plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y')) #formatting from https://stackoverflow.com/questions/9627686/plotting-dates-on-the-x-axis-with-pythons-matplotlib
+            plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+            plt.plot(times, winnings, linewidth=2.0)
+            plt.gcf().autofmt_xdate()
+            plt.show()
+
+        except Exception as e:
+            print(e)
 
 if __name__=='__main__':
     login()
