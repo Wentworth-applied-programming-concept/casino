@@ -114,7 +114,7 @@ class admin(user):
 
     def addGame(self, gameName, uid, win):
         try:
-            time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            time = datetime.now().strftime("%Y-%m-%d")
             game.create(gameType=gameName, userID=uid, winnings=win, timeStamp=time)
         except Exception as e:
             print("Error: ", e)

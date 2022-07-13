@@ -606,11 +606,13 @@ class admin_graph:
             winnings = winnings[dp:]
             times = times[dp:]
 
-            plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y')) #formatting from https://stackoverflow.com/questions/9627686/plotting-dates-on-the-x-axis-with-pythons-matplotlib
+            plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d')) #formatting from https://stackoverflow.com/questions/9627686/plotting-dates-on-the-x-axis-with-pythons-matplotlib
             plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-            plt.plot(times, winnings, linewidth=2.0)
+            plt.bar(times, winnings, linewidth=2.0)
+            plt.xticks(times)
+            plt.yticks(winnings)
             plt.gcf().autofmt_xdate()
-            plt.show()
+            plt.savefig("mygraph.png")
 
         except Exception as e:
             print(e)
