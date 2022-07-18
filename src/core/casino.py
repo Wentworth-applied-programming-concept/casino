@@ -114,8 +114,12 @@ class admin(user):
 
     def addGame(self, gameName, uid, win):
         try:
+            try:
+                gid = game.select(fn.Max(game.gameID)).scalar() + 1
+            except Exception as e:
+                gid = 0
             time = datetime.now().strftime("%Y-%m-%d")
-            game.create(gameType=gameName, userID=uid, winnings=win, timeStamp=time)
+            game.create(gameID = gid, gameType=gameName, userID=uid, winnings=win, timeStamp=time)
         except Exception as e:
             print("Error: ", e)
 
@@ -163,3 +167,45 @@ class admin(user):
         except Exception as e:
             print("Error: ", e)
             return None
+
+    def searchForGame(self, dataType, entry, uid = None): #function to search for a game by game type, user id, or time stamp
+        try:
+            if dataType == "gameType":
+                return game.select().where(game.gameType == entry).where(game.userID == uid)
+            elif dataType == "winnings":
+                return game.select().where(game.winnings == entry).where(game.userID == uid)
+            elif dataType == "timeStamp":
+                return game.select().where(game.timeStamp == entry).where(game.userID == uid)
+            elif dataType == "userID":
+                return game.select().where(game.userID == entry)
+            elif dataType == "gameID":
+                return game.select().where(game.gameID == entry)
+            else:
+                return None
+        except Exception as e:
+            print("Error: ", e)
+            return None
+
+    def searchForAdmin(self, dataType, entry):
+        try:
+            if dataType == "userID":
+                return Player.select().where(Player.userID == entry).where(Player.admin == True)
+            elif dataType == "firstName":
+                return Player.select().where(Player.firstName == entry).where(Player.admin == True)
+            elif dataType == "lastName":
+                return Player.select().where(Player.lastName == entry).where(Player.admin == True)
+        except Exception as e:
+            pass
+
+    def searchForPlayer(self, dataType, entry):
+        try:
+            if dataType == "userID":
+                return Player.select().where(Player.userID == entry).where(Player.admin == False)
+            elif dataType == "firstName":
+                return Player.select().where(Player.firstName == entry).where(Player.admin == False)
+            elif dataType == "lastName":
+                return Player.select().where(Player.lastName == entry).where(Player.admin == False)
+            elif dataType == "winnings":
+                return Player.select().where(Player.winnings == entry).where(Player.admin == False)
+        except Exception as e:
+            pass

@@ -1,4 +1,5 @@
 from src.core.casino import player, admin
+from src.ui.ui import player as ui
 
 import random
 
@@ -21,6 +22,7 @@ class slots:
                 print(f"You earned: {money}, your balance is now {self.player.getWinnings(self.uid)}")
             else:
                 run = False
+        ui(self.uid)
     
     def playGame(self):
         roll1 = random.randint(0, 10) 
