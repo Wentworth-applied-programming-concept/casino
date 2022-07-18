@@ -12,25 +12,20 @@ class Player(Model):
     password = CharField()
     winnings = FloatField(null=True)
     banned = BooleanField(null=True)
-    admin = BooleanField(null=True)
+    admin = BooleanField()
 
     class Meta:
         database = db
 
-
-class gameModel(Model):
+class game(Model):
     gameID = IntegerField(unique=True) #unique ID of each game
+    gameType = CharField() #unique ID of each game
     userID = CharField() #user who played game
     winnings = FloatField(null=True)
     timeStamp = DateField(null=True)
 
     class Meta:
         database = db
-
-class Slots(gameModel):
-    '''One of these needs to be added for every game, additionally the table needs to be added in main below'''
-    pass
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Create databases or delete databases.")
@@ -42,10 +37,14 @@ if __name__ == '__main__':
     db.connect()
 
     if args.mode == 'c':
-        db.create_tables([Player, Slots])
+        db.create_tables([Player, game])
         Player.create(userID='admin', firstName='default',
             lastName='default', password='admin', admin=True)
+        Player.create(userID='bobby123', firstName='Bob',
+            lastName='Dylan', password='admin', winnings=0, admin=False)
+        Player.create(userID='harry4959', firstName='Harry',
+            lastName='Dad', password='admin', winnings=0, admin=False)
     elif args.mode == 'd':
-        db.drop_tables([Player, Slots])
+        db.drop_tables([Player, game])
     else:
         print("No Args specified. Try again.")
