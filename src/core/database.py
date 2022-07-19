@@ -3,7 +3,6 @@ import argparse
 import sys
 import json
 
-from pyrsistent import optional
 
 db = SqliteDatabase('src/core/casino.db')
 

@@ -7,17 +7,17 @@ from random import randint
 
 class roulette:
 
-    def __int__(self, uid):
+    def __init__(self, uid, diff):
         self.player = player()
         self.admin = admin()
         self.uid = uid
 
-        roulette = { # possible positions on the roulette table
+        self.roulette = { # possible positions on the roulette table
             'g' : ['0'],
             'r': ['1','3','5','7','9','12','14','16','18','19','21','23','25','27','30','32','34','36'],
             'b': ['2','4','6','8','10','11','13','15','17','20','22','24','26','28','29','31','33','35']
             }
-        bets = {
+        self.bets = {
             'green':'g', 'red':'r', 'black':'b',
             'odd': ['1','3','5','7','9','11','13','15','17','19','21','23','25','27','29','31','33','35'],
             'even': ['2','4','6','8','12','14','16','18','20','22','24','26','28','30','32','34','36'],
@@ -26,11 +26,10 @@ class roulette:
             'column1': ['1','4','7','10','13','16','19','22','25','28','31','34'],
             'column2': ['2','5','8','11','14','17','20','23','26','29','32','35'],
             'column3': ['3','6','9','12','15','18','21','24','27','30','33','36'],
-            'num': list(roulette.keys()) # puts the dictionary in terms of a list
+            'num': list(self.roulette.keys()) # puts the dictionary in terms of a list
             }
 
-
-        payout = { # payout 1 means that u make the money u put in, and 2 means u profit twice the amount u paid
+        self.payout = { # payout 1 means that u make the money u put in, and 2 means u profit twice the amount u paid
             'red': 1,
             'black': 1,
             'odd' : 1,
@@ -42,81 +41,6 @@ class roulette:
             'column3': 2,
             'num': 36
             }
-        def getValue(self):
-            global color
-            number = str(randint(0, 36)) # Chooses a random number for the roulette to
-            print(number)
-            for key,value in roulette.items():#  iteration over the dictionary 
-                if number in value:
-                    color = key
-            return  color, number
-        def moneyWon(self, betAmount, bet):
-            print("Congratulations you have won")
-            bail = (self.payout.get(bet)) 
-            money = (bail*betAmount)
-            self.admin.addGame("Roulette", self.uid, betAmount,  money)
-            print(f"You earned: {money}, your balance is now {self.player.getWinnings(self.uid)}")
-            print(money)
-            ui(self.uid)
-            return(money)
-            #return payout * betAmount
-        def moneyLost(self, betAmount):
-            self.admin.addGame("Roulette", self.uid, betAmount, 0)
-            print(f"You have lost {betAmount}, your balance is now {self.player.getWinnings(self.uid)}")
-            ui(self.uid)
-
-        def didYouWin(self, winningColor, winningNumber, betOption, userPick,betAmount):#using option need compare the value of the option with the values in the key of the bet dictionary
-            print(betOption)
-            winningBets = []
-            winningBets = [key
-                            for key, list_of_values in self.bets.items ()
-                            if winningNumber in list_of_values]
-            print(winningBets)
-            if(betOption == '1'):
-                if(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) == userPick: #put the keys and values of the bets dictionary into lists, which helps show if the bet and actual value/color are the same
-                    print(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) #prints the winning color
-                    return self.moneyWon(betAmount,userPick) # returns the payout
-                else:
-                    self.moneyLost(betAmount)
-            elif(betOption == '2'):
-                if winningNumber == userPick:
-                    return self.moneyWon(betAmount, userPick)
-                else:
-                    self.moneyLost(betAmount)
-            elif(betOption == '3'):
-                print(userPick)
-                i = 0
-                for x in range(len(winningBets)):
-                    if(userPick == winningBets[x]):
-                        i+=1
-                if(i<1):
-                        self.moneyLost(betAmount)
-                else:
-                        return self.moneyWon(betAmount,userPick)
-
-            elif(betOption == '4'):
-                print(userPick)
-                i = 0
-                for x in range(len(winningBets)):
-                    if(userPick == winningBets[x]):
-                        i+=1
-                if(i<1):
-                        self.moneyLost(betAmount)
-                else:
-                        return self.moneyWon(betAmount,userPick)
-            elif(betOption == '5'):
-                print(userPick)
-                i = 0
-                for x in range(len(winningBets)):
-                    if(userPick == winningBets[x]):
-                        i+=1
-                if(i<1):
-                        self.moneyLost(betAmount)
-                else:
-                        return self.moneyWon(betAmount,userPick)
-            else:
-                print("This bet doesn't exist.Please try again")
-                return 5
 
         Option = True
         goThrough = True
@@ -185,7 +109,7 @@ class roulette:
             self.didYouWin(winningColor, winningValue, Option, userPick, bet)
             keepPlaying=input("Woud you like to keep playing:")
             print(keepPlaying)
-            if keepPlaying == "yes" or "Yes":
+            if keepPlaying == "yes" or keepPlaying == "Yes":
                 print(keepPlaying)
                 game_in_session = True
                 Option = True
@@ -194,6 +118,82 @@ class roulette:
                 nonValidbet = True
             else:
                 game_in_session = False
+                continue
+        ui(self.uid)
+            
+    def getValue(self):
+        global color
+        number = str(randint(0, 36)) # Chooses a random number for the roulette to
+        print(number)
+        for key,value in self.roulette.items():#  iteration over the dictionary 
+            if number in value:
+                color = key
+        return  color, number
+    def moneyWon(self, betAmount, bet):
+        print("Congratulations you have won")
+        bail = (self.payout[bet]) 
+        money = (bail*betAmount)
+        self.admin.addGame("roulette", self.uid, betAmount,  money)
+        print(f"You earned: {money}, your balance is now {self.player.getWinnings(self.uid)}")
+        print(money)
+        return(money)
+        #return payout * betAmount
+    def moneyLost(self, betAmount):
+        self.admin.addGame("roulette", self.uid, betAmount, 0)
+        print(f"You have lost {betAmount}, your balance is now {self.player.getWinnings(self.uid)}")
+
+    def didYouWin(self, winningColor, winningNumber, betOption, userPick,betAmount):#using option need compare the value of the option with the values in the key of the bet dictionary
+        print(betOption)
+        winningBets = []
+        winningBets = [key
+                        for key, list_of_values in self.bets.items ()
+                        if winningNumber in list_of_values]
+        print(winningBets)
+        if(betOption == '1'):
+            if(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) == userPick: #put the keys and values of the bets dictionary into lists, which helps show if the bet and actual value/color are the same
+                print(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) #prints the winning color
+                return self.moneyWon(betAmount,userPick) # returns the payout
+            else:
+                self.moneyLost(betAmount)
+        elif(betOption == '2'):
+            if winningNumber == userPick:
+                return self.moneyWon(betAmount, userPick)
+            else:
+                self.moneyLost(betAmount)
+        elif(betOption == '3'):
+            print(userPick)
+            i = 0
+            for x in range(len(winningBets)):
+                if(userPick == winningBets[x]):
+                    i+=1
+            if(i<1):
+                    self.moneyLost(betAmount)
+            else:
+                    return self.moneyWon(betAmount,userPick)
+
+        elif(betOption == '4'):
+            print(userPick)
+            i = 0
+            for x in range(len(winningBets)):
+                if(userPick == winningBets[x]):
+                    i+=1
+            if(i<1):
+                    self.moneyLost(betAmount)
+            else:
+                    return self.moneyWon(betAmount,userPick)
+        elif(betOption == '5'):
+            print(userPick)
+            i = 0
+            for x in range(len(winningBets)):
+                if(userPick == winningBets[x]):
+                    i+=1
+            if(i<1):
+                    self.moneyLost(betAmount)
+            else:
+                    return self.moneyWon(betAmount,userPick)
+        else:
+            print("This bet doesn't exist.Please try again")
+            return 5
 
 if __name__ == "__main__":
     roulette()
