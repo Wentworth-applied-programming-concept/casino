@@ -1,4 +1,5 @@
 import enum
+from socketserver import DatagramRequestHandler
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -8,6 +9,7 @@ import json
 import importlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import datetime
 
 user = player()
 administrator = admin()
@@ -62,7 +64,7 @@ class login:
                 self.root.destroy()  # close login page
                 if adminCheck:
                     # launch admin
-                    admin_user_dashboard()
+                    admin_overview_dashboard()
                 else:
                     player(uname)
             else:
@@ -131,6 +133,7 @@ class admin_menu_bar:
 
         self.menubar = Menu(self.window)
         self.menu = Menu(self.menubar, tearoff=0)
+        self.menu.add_command(label="Casino View", command=self.casinoOverview)
         self.menu.add_command(label="Player View", command=self.userView)
         self.menu.add_command(label="Admin View", command=self.adminView)
         self.menu.add_command(label="Game History", command=self.gameView)
@@ -141,6 +144,10 @@ class admin_menu_bar:
 
         self.menubar.add_cascade(label="Menu", menu=self.menu)
         self.window.config(menu=self.menubar)
+
+    def casinoOverview(self):
+        self.window.destroy()
+        admin_overview_dashboard()
 
     def userView(self):
         self.window.destroy()
@@ -378,16 +385,19 @@ class player_game_selection:
 
             self.button.append(ttk.Button(self.frame, text='Play'))
             self.button[count].grid(column=2, row=count, sticky='e', **options)
-            self.button[count].configure(command=lambda: self.launch(game))
+            self.button[count].configure(command=lambda temp=game: self.launch(temp)) # lamba trick from https://stackoverflow.com/questions/10865116/tkinter-creating-buttons-in-for-loop-passing-command-arguments
 
         self.frame.grid(padx=10, pady=10)
-
+ 
         self.window.mainloop()
 
     def launch(self, game):
         self.window.destroy()
+
+        game_diff = administrator.getGameDifficulty(game)
+
         mod = importlib.import_module(f'src.games.{game}')
-        eval('mod.' + game + '(self.uid)')
+        eval('mod.' + game + '(self.uid, game_diff)')
 
 
 class player_graph:
@@ -484,6 +494,67 @@ class player_graph:
         except Exception as e:
             print(e)
 
+class admin_overview_dashboard: #displays casino winnings, per game winnings, and difficulty of games
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title('Casino Admin Dashboard')
+        self.window.geometry('1000x900')
+        self.frame = ttk.Frame(self.window)
+        self.navbar = admin_menu_bar(self.window)
+
+        self.window.resizable(False, False)
+
+        options = {'padx': 5, 'pady': 5}
+
+        self.balance_label = ttk.Label(
+            self.frame, text=f"The All Time Casino Balance Is: {administrator.checkCasinoWinnings()}", font='Helvetica 16 bold')
+        self.balance_label.grid(
+            column=0, row=0, columnspan=2, sticky='W', **options)
+
+        with open('src/games/games.json') as data:
+            self.gameList = json.load(data)
+
+        self.winningslabel = []
+        self.difficultyLabel = []
+        self.update_label = []
+        self.textBox = []
+
+        for count, game in enumerate(self.gameList['games']):
+            self.winningslabel.append(ttk.Label(self.frame, text=f"{game} total: {administrator.checkGameWinnings(game)}"))
+            self.winningslabel[count].grid(column=0, row=count + 1,
+                                   sticky='W', **options)
+
+            self.difficultyLabel.append(ttk.Label(self.frame, text=f"{game} difficulty: {administrator.getGameDifficulty(game)}"))
+            self.difficultyLabel[count].grid(column=1, row=count + 1,
+                                   sticky='W', **options)
+
+            self.update_label.append(ttk.Label(self.frame, text="Update difficulty: "))
+            self.update_label[count].grid(column=2, row=count + 1,
+                                   sticky='W', **options) 
+
+            self.textBox.append(tk.StringVar())
+            self.textBox[count] = ttk.Entry(self.frame)
+            self.textBox[count].grid(column=3, row=count + 1)
+            self.textBox[count].focus()
+
+        self.button = ttk.Button(self.frame, text='Update')
+        self.button.grid(column=4, row=count + 1, sticky='e', **options)
+        self.button.configure(command=self.update)
+
+        self.frame.grid(padx=10, pady=10)
+
+        self.window.mainloop()
+    
+    def update(self):
+        try:
+            for count, game in enumerate(self.gameList['games']):
+                data = self.textBox[count].get()
+                if data != "": #check to make sure a difficulty was entered
+                    self.difficultyLabel[count].configure(text=f"{game} difficulty: {float(data)}")
+                    administrator.setGameDifficulty(game, float(data))
+
+        except Exception as e:
+            print(e)
 
 class admin_user_dashboard:  # table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
     def __init__(self):

@@ -102,24 +102,32 @@ class admin(user):
 
         usr.save()
 
-    def addWinnings(self, uid, winnings):
-        '''add a negative value to decreate winnings, add a positive value to increate winnings'''
-        user = Player.select().where(Player.userID == uid).get()
-        if(user.winnings == None):
-            user.winnings = (winnings)
-        else:
-            user.winnings = (user.winnings + winnings)
-
-        user.save()
-
-    def addGame(self, gameName, uid, win):
+    def addGame(self, gameName, uid, cost, win):
         try:
             try:
                 gid = game.select(fn.Max(game.gameID)).scalar() + 1
             except Exception as e:
                 gid = 0
+                
             time = datetime.now().strftime("%Y-%m-%d")
             game.create(gameID = gid, gameType=gameName, userID=uid, winnings=win, timeStamp=time)
+
+            user = Player.select().where(Player.userID == uid).get()
+            if(user.winnings == None):
+                user.winnings = (win - cost)
+            else:
+                user.winnings = (user.winnings + (win - cost))
+            user.save()
+
+            #update total casino and per game winnings
+            gameTotal = casino.select().where(casino.entryName == gameName).get()
+            gameTotal.winnings = gameTotal.winnings + cost - win
+            gameTotal.save()
+
+            casinoTotal = casino.select().where(casino.entryName == "casino").get()
+            casinoTotal.winnings = casinoTotal.winnings + cost - win
+            casinoTotal.save()
+
         except Exception as e:
             print("Error: ", e)
 
@@ -138,6 +146,13 @@ class admin(user):
     def checkPlayerBalance(self, uid):
         user = Player.select().where(Player.userID == uid).get()
         return user.winnings
+    
+    def checkIfEnough(self, uid, cost): #function to check if player has enough money to play
+        user = Player.select().where(Player.userID == uid).get()
+        if user.winnings >= cost:
+            return True
+        else:
+            return False
     
     def generateGraphData(self, uid = "", gameName = "", startTime = "", endTime = ""):
         try:
@@ -209,3 +224,20 @@ class admin(user):
                 return Player.select().where(Player.winnings == entry).where(Player.admin == False)
         except Exception as e:
             pass
+
+    def setGameDifficulty(self, game, diff):
+        try:
+            gameTracker = casino.select().where(casino.entryName == game).get()
+            gameTracker.difficulty = diff
+            gameTracker.save()
+        except Exception as e:
+            print("Error: ", e)
+
+    def getGameDifficulty(self, game):
+        return casino.select().where(casino.entryName == game).get().difficulty
+
+    def checkCasinoWinnings(self):
+        return casino.select().where(casino.entryName == "casino").get().winnings
+    
+    def checkGameWinnings(self, game):
+        return casino.select().where(casino.entryName == game).get().winnings
