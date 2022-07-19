@@ -3,21 +3,13 @@ import random
 
 class craps:
 
-    def __init__(self):
+    def __init__(self, uid, odds):
         self.player = player()
         self.admin = admin()
+        self.uid = uid
         self.flag = 0
 
-        run = False
-        while not run:
-            userID = input("Enter your player ID: ")
-            pword = input("Enter your password: ")
-
-            if self.player.checkLogin(userID, pword):
-                run = True
-                self.uid = userID                                   #why is this not self.player.uid?
-            else:
-                print("Login invalid, please try again")
+        run = True
         while run:
             userInput = input("Would you like to play a round of craps? (y/n): ")
 
@@ -28,7 +20,8 @@ class craps:
                 self.admin.addGame('Craps', self.uid, money)
                 print(f"You earned: {money}, your balance is now {self.player.getWinnings(self.uid)}")
             else:
-                quit()
+                run = False
+        ui(self.uid)
     
     def playGame(self):
         '''Starts the game.'''
@@ -87,7 +80,7 @@ class craps:
                 continue
 
     def bet(self, balance, amt):
-        '''This function allows the user to place multiple bets. TODO: add a flag to pick which mode to run.'''
+        '''This function allows the user to place multiple bets.'''
         #amt.indexOf(i) = bet on the number i+2
         num = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         while(1):
