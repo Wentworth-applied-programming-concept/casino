@@ -1,6 +1,7 @@
 {
     "games":[
         "slots",
-        "roulette"
+      "roulette",
+      "blackjack"
     ]
 }
