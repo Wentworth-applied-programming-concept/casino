@@ -230,7 +230,7 @@ class player:
             column=0, row=0, columnspan=2, sticky='W', **options)
 
         self.balance_label = ttk.Label(
-            self.frame, text=f"Your balance is: {administrator.checkPlayerBalance(self.uid)}", font='Helvetica 12 bold')
+            self.frame, text=f"Your balance is: {administrator.checkPlayerBalance(self.uid):.2f}$", font='Helvetica 12 bold')
         self.balance_label.grid(
             column=0, row=1, columnspan=2, sticky='W', **options)
 
@@ -355,7 +355,7 @@ class player_game_history:
         self.window.after_cancel(self.refresh)
         self.user_table.clearTable()
         self.user_table.update(administrator.searchForGame(
-            self.headerMap[self.clicked.get()], self.sEntry.get()), self.uid)
+            self.headerMap[self.clicked.get()], self.sEntry.get(), self.uid))
 
 
 class player_game_selection:
@@ -507,7 +507,7 @@ class admin_overview_dashboard: #displays casino winnings, per game winnings, an
         options = {'padx': 5, 'pady': 5}
 
         self.balance_label = ttk.Label(
-            self.frame, text=f"The All Time Casino Balance Is: {administrator.checkCasinoWinnings()}", font='Helvetica 16 bold')
+            self.frame, text=f"The All Time Casino Balance Is: {administrator.checkCasinoWinnings():.2f}$", font='Helvetica 16 bold')
         self.balance_label.grid(
             column=0, row=0, columnspan=2, sticky='W', **options)
 
@@ -520,7 +520,7 @@ class admin_overview_dashboard: #displays casino winnings, per game winnings, an
         self.textBox = []
 
         for count, game in enumerate(self.gameList['games']):
-            self.winningslabel.append(ttk.Label(self.frame, text=f"{game} total: {administrator.checkGameWinnings(game)}"))
+            self.winningslabel.append(ttk.Label(self.frame, text=f"{game} total: {administrator.checkGameWinnings(game):.2f}$"))
             self.winningslabel[count].grid(column=0, row=count + 1,
                                    sticky='W', **options)
 

@@ -185,16 +185,23 @@ class admin(user):
 
     def searchForGame(self, dataType, entry, uid = None): #function to search for a game by game type, user id, or time stamp
         try:
-            if dataType == "gameType":
+            if dataType == "gameType" and uid == None: #admin search options, no uid provided
+                return game.select().where(game.gameType == entry)
+            elif dataType == "winnings" and uid == None:
+                return game.select().where(game.winnings == entry)
+            elif dataType == "timeStamp" and uid == None:
+                return game.select().where(game.timeStamp == entry)
+            elif dataType == "userID":
+                return game.select().where(game.userID == entry)
+            elif dataType == "gameID":
+                return game.select().where(game.gameID == entry)
+
+            elif dataType == "gameType": #user search options when uid is not None
                 return game.select().where(game.gameType == entry).where(game.userID == uid)
             elif dataType == "winnings":
                 return game.select().where(game.winnings == entry).where(game.userID == uid)
             elif dataType == "timeStamp":
                 return game.select().where(game.timeStamp == entry).where(game.userID == uid)
-            elif dataType == "userID":
-                return game.select().where(game.userID == entry)
-            elif dataType == "gameID":
-                return game.select().where(game.gameID == entry)
             else:
                 return None
         except Exception as e:
