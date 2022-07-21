@@ -18,7 +18,7 @@ class craps:
 
             if userInput == 'y':
                 money = self.playGame()
-                self.administrator.addGame('Craps', self.uid, self.spent, money)
+                self.administrator.addGame('craps', self.uid, self.spent, money)
                 print(f"You earned: ${money-self.spent}, your balance is now {self.player.getWinnings(self.uid)}")
             else:
                 run = False
