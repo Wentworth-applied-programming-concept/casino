@@ -102,14 +102,18 @@ class admin(user):
 
         usr.save()
 
-    def addGame(self, gameName, uid, cost, win):
+    def addGame(self, gameName, uid, cost, win, datePlayed=None):
         try:
             try:
                 gid = game.select(fn.Max(game.gameID)).scalar() + 1
             except Exception as e:
                 gid = 0
+            
+            if datePlayed == None:
+                time = datetime.now().strftime("%Y-%m-%d")
+            else:
+                time = datePlayed
                 
-            time = datetime.now().strftime("%Y-%m-%d")
             game.create(gameID = gid, gameType=gameName, userID=uid, winnings=win, timeStamp=time)
 
             user = Player.select().where(Player.userID == uid).get()
