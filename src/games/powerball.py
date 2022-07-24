@@ -1,13 +1,42 @@
-#created by Cameron Avellani
+##created by Cameron Avellani and Abdullahi Ibrahim
 #Powerball lottery picker
+
+from src.core.casino import player, admin
+from src.ui.ui import player as ui
 import random
 
 
 class powerball:
+    def __init__(self, uid, difficulty):
+        self.player = player()
+        self.admin = admin()
+        self.uid = uid
+        self.difficulty = difficulty
+
+        run = True
+
+        while run:
+            userInput = input("Would you like to play (y/n): ")
+
+            if userInput == 'y':
+                play = self.admin.checkIfEnough(self.uid, 100) #check if player has enought to bet
+                if play == True:
+                    money = self.playGame()
+                    self.admin.addGame('powerball', self.uid, 100, money)
+                    print(f"You earned: {money}, your balance is now {self.player.getWinnings(self.uid)}")
+                else:
+                    print("You do not have enough to play")
+            else:
+                run = False
+        ui(self.uid)
     print("Welcome to Power ball!!")
 
     print("In order to get the Powerball Jackpot you must match all 5 of your numbers in order to win!!\n")
-    while True:
+    
+    
+    
+    
+while True:
         game = 1
         print("\n -----POWERBALL PAYOUTS-----","\nMatch PB - $4", "\nMatch 1 +PB - $4", "\nMatch 2 + PB - $7", "\nMatch 3 - $7","\nMatch 3 + PB - $100", "\nMatch 4 - $100", "\nMatch 4 + PB - $1,000", "\nMatch 5 - $5,000", "\nMatch 5 + PB - $10,000")
         print("\nEach Power ball ticket costs $5\n")
@@ -121,3 +150,6 @@ class powerball:
         if play == '2':
             print("Thank you for playing!! Please try again soon!!")
             break
+            
+if __name__ == '__main__':
+    powerball()
