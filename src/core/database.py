@@ -52,10 +52,6 @@ if __name__ == '__main__':
         db.create_tables([Player, game, casino])
         Player.create(userID='admin', firstName='default',
             lastName='default', password='admin', admin=True)
-        Player.create(userID='bobby123', firstName='Bob',
-            lastName='Dylan', password='admin', winnings=0, admin=False)
-        Player.create(userID='harry4959', firstName='Harry',
-            lastName='Dad', password='admin', winnings=0, admin=False)
         
         casino.create(entryName="casino", winnings=0.0, difficulty=1) #create casino tracker
 
