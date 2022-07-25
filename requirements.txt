@@ -1,3 +1,4 @@
 peewee
 matplotlib
 Faker
+pygame
