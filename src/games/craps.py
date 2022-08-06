@@ -42,12 +42,12 @@ class craps:
         while(1):
             if roll in (7, 11): #pass
                 # win chips bet on 7, 11 : lose on 2, 3, 12
-                winnings = self.payoutVal(amt[5] + amt[9])
+                winnings = self.payoutVal*(amt[5] + amt[9])
                 print(f"You won ${winnings} and spent a total of ${self.spent}. ")
                 return winnings
             elif roll in (2, 3, 12): #dont pass
                 # win chips bet on 2, 3, 12 : lose on 7, 11
-                winnings = self.payoutVal(amt[0] + amt[1] + amt[10])
+                winnings = self.payoutVal*(amt[0] + amt[1] + amt[10])
                 print(f"You won ${winnings} and spent a total of ${self.spent}. ")
                 return winnings
             else:
@@ -70,17 +70,17 @@ class craps:
             roll = 0
             roll = self.rollDie()
             if roll in (7, 11): #lose don't passes, win passes, break
-                winnings = self.payoutVal(amt[5] + amt[9])
+                winnings = self.payoutVal*(amt[5] + amt[9])
                 return winnings
             elif roll in (2, 3, 12): #lose passes, win don't passes, continue   
-                winnings = self.payoutVal(amt[0] + amt[1] + amt[10])
+                winnings = self.payoutVal*(amt[0] + amt[1] + amt[10])
                 amt[0] = 0; amt[1] = 0; amt[10] = 0; amt[5] = 0; amt[9] = 0
                 continue
             elif roll == p: # win point, break
-                winnings = self.payoutVal(amt[p])
+                winnings = self.payoutVal*(amt[p])
                 return winnings
             else: # win whatever u bet on, continue
-                winnings = self.payoutVal(amt[roll-2])
+                winnings = self.payoutVal*(amt[roll-2])
                 amt[roll-2] = 0
                 continue
 
