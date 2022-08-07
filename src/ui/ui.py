@@ -108,7 +108,12 @@ class table:  # abstract table based on https://www.geeksforgeeks.org/python-tki
             for val in data:
                 insertValues = []
                 for count, value in enumerate(self.dataHeaders):
-                    insertValues.append(getattr(val, self.dataHeaders[count]))
+                    valCheck = getattr(val, self.dataHeaders[count])
+                    if isinstance(valCheck, float): #check to see if entry is float, if so it is related to money, so use 2 decimals
+                        float2string = f"{valCheck:.2f}"
+                        insertValues.append(float2string)
+                    else: 
+                        insertValues.append(getattr(val, self.dataHeaders[count]))
 
                 # check if player is already in table, if not add
                 if getattr(val, self.dataHeaders[0]) not in self.uidInTable:
