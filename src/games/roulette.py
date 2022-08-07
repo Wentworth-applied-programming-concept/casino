@@ -157,7 +157,7 @@ class roulette:
                 self.moneyLost(betAmount)
         elif(betOption == '2'):
             if winningNumber == userPick:
-                return self.moneyWon(betAmount, userPick)
+                return self.moneyWon(betAmount, 'num')
             else:
                 self.moneyLost(betAmount)
         elif(betOption == '3'):
