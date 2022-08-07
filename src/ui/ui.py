@@ -179,8 +179,8 @@ class player_menu_bar:
         self.menubar = Menu(self.window)
         self.menu = Menu(self.menubar, tearoff=0)
         self.menu.add_command(label="Main", command=self.userView)
-        self.menu.add_command(label="Game History", command=self.gameHistory)
         self.menu.add_command(label="Launch Games", command=self.gameSelection)
+        self.menu.add_command(label="Game History", command=self.gameHistory)
         self.menu.add_command(label="Generate Graphs", command=self.graph)
 
         self.menu.add_separator()
@@ -234,20 +234,20 @@ class player:
         self.balance_label.grid(
             column=0, row=1, columnspan=2, sticky='W', **options)
 
-        self.update_lab = ttk.Label(self.frame, text=f"Change your settings")
+        self.update_lab = ttk.Label(self.frame, text="Change your settings, fields left blank will not be updated")
         self.update_lab.grid(column=0, row=2, columnspan=2,
                              sticky='W', **options)
 
-        self.uname_label = ttk.Label(self.frame, text='Username:')
+        self.uname_label = ttk.Label(self.frame, text='New Username:')
         self.uname_label.grid(column=0, row=3, sticky='W', **options)
 
-        self.pass_label = ttk.Label(self.frame, text='Password:')
+        self.pass_label = ttk.Label(self.frame, text='New Password:')
         self.pass_label.grid(column=1, row=3, sticky='W', **options)
 
-        self.fname_label = ttk.Label(self.frame, text='First Name:')
+        self.fname_label = ttk.Label(self.frame, text='New First Name:')
         self.fname_label.grid(column=0, row=5, sticky='W', **options)
 
-        self.lname_label = ttk.Label(self.frame, text='Last Name:')
+        self.lname_label = ttk.Label(self.frame, text='New Last Name:')
         self.lname_label.grid(column=1, row=5, sticky='W', **options)
 
         self.userID = tk.StringVar()
@@ -283,10 +283,22 @@ class player:
         self.window.after(1000, self.clock)  # callback every 1 second
 
     def update(self):
-        user.updateInfo(self.uid, self.userID.get(), self.firstName.get(
+        newUID = self.userID.get()
+        out = user.updateInfo(self.uid, newUID, self.firstName.get(
         ), self.lastName.get(), self.password.get())
+        if out:
+            self.uid = newUID
+            self.update_lab['text'] = "Update successful!"
+            
+            self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
 
+            self.welcome_label['text'] = f"Welcome {self.uid}!" #print updated welcome label
+        else:
+            self.update_lab['text'] = "Error: user not updated, check inputs"
+            self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
 
+    def resetUpdateLabel(self):
+        self.update_lab['text'] = "Change your settings, fields left blank will not be updated"
 class player_game_history:
     def __init__(self, uid):
         self.uid = uid
@@ -402,13 +414,15 @@ class player_game_selection:
 
 class player_graph:
     def __init__(self, uid):
+        self.uid = uid
+
         self.window = tk.Tk()
         self.window.title('Casino Graph Dashboard')
         self.window.geometry('1000x900')
         self.frame = ttk.Frame(self.window)
+
         self.navbar = player_menu_bar(self.window, self.uid)
 
-        self.uid = uid
         self.window.resizable(False, False)
 
         options = {'padx': 5, 'pady': 5}
@@ -511,6 +525,10 @@ class admin_overview_dashboard: #displays casino winnings, per game winnings, an
         self.balance_label.grid(
             column=0, row=0, columnspan=2, sticky='W', **options)
 
+        self.update_lab = ttk.Label(self.frame, text="View game data and update game difficulties:")
+        self.update_lab.grid(column=0, row=1, columnspan=3,
+                             sticky='W', **options)
+
         with open('src/games/games.json') as data:
             self.gameList = json.load(data)
 
@@ -521,24 +539,24 @@ class admin_overview_dashboard: #displays casino winnings, per game winnings, an
 
         for count, game in enumerate(self.gameList['games']):
             self.winningslabel.append(ttk.Label(self.frame, text=f"{game} total: {administrator.checkGameWinnings(game):.2f}$"))
-            self.winningslabel[count].grid(column=0, row=count + 1,
+            self.winningslabel[count].grid(column=0, row=count + 2,
                                    sticky='W', **options)
 
             self.difficultyLabel.append(ttk.Label(self.frame, text=f"{game} difficulty: {administrator.getGameDifficulty(game)}"))
-            self.difficultyLabel[count].grid(column=1, row=count + 1,
+            self.difficultyLabel[count].grid(column=1, row=count + 2,
                                    sticky='W', **options)
 
             self.update_label.append(ttk.Label(self.frame, text="Update difficulty: "))
-            self.update_label[count].grid(column=2, row=count + 1,
+            self.update_label[count].grid(column=2, row=count + 2,
                                    sticky='W', **options) 
 
             self.textBox.append(tk.StringVar())
             self.textBox[count] = ttk.Entry(self.frame)
-            self.textBox[count].grid(column=3, row=count + 1)
+            self.textBox[count].grid(column=3, row=count + 2)
             self.textBox[count].focus()
 
         self.button = ttk.Button(self.frame, text='Update')
-        self.button.grid(column=4, row=count + 1, sticky='e', **options)
+        self.button.grid(column=4, row=count + 2, sticky='e', **options)
         self.button.configure(command=self.update)
 
         self.frame.grid(padx=10, pady=10)
@@ -546,15 +564,25 @@ class admin_overview_dashboard: #displays casino winnings, per game winnings, an
         self.window.mainloop()
     
     def update(self):
-        try:
-            for count, game in enumerate(self.gameList['games']):
-                data = self.textBox[count].get()
-                if data != "": #check to make sure a difficulty was entered
+        error = False
+        for count, game in enumerate(self.gameList['games']):
+            data = self.textBox[count].get()
+            if data != "": #check to make sure a difficulty was entered
+                out = administrator.setGameDifficulty(game, float(data))
+                if out:
                     self.difficultyLabel[count].configure(text=f"{game} difficulty: {float(data)}")
-                    administrator.setGameDifficulty(game, float(data))
+                    if not error:
+                        self.update_lab['text'] = "Update successful!"
+                        self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
+                else:
+                    if not error:
+                        self.update_lab['text'] = "Error: some or all values not updated, inputs cannot be over 5.0"
+                        self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds 
+                        error = True                       
 
-        except Exception as e:
-            print(e)
+
+    def resetUpdateLabel(self):
+        self.update_lab['text'] = "View game data and update game difficulties:"           
 
 class admin_user_dashboard:  # table based on https://www.geeksforgeeks.org/python-tkinter-treeview-scrollbar/
     def __init__(self):
@@ -597,6 +625,10 @@ class admin_user_dashboard:  # table based on https://www.geeksforgeeks.org/pyth
         self.sEntry.grid(column=3, row=1)
         self.sEntry.focus()
 
+        self.update_lab = ttk.Label(self.frame, text="Highlight user to update settings, fields left blank will not be updated:")
+        self.update_lab.grid(column=0, row=2, columnspan=4,
+                             sticky='W', **options)
+
         searchButton = ttk.Button(self.frame, text='Search')
         searchButton.grid(column=4, row=1, sticky='e', **options)
         searchButton.configure(command=self.search)
@@ -606,55 +638,55 @@ class admin_user_dashboard:  # table based on https://www.geeksforgeeks.org/pyth
         clearSearch.configure(command=self.clock)
 
         self.uname_label = ttk.Label(self.frame, text='Username:')
-        self.uname_label.grid(column=0, row=2, sticky='W', **options)
+        self.uname_label.grid(column=0, row=3, sticky='W', **options)
 
         self.pass_label = ttk.Label(self.frame, text='Password:')
-        self.pass_label.grid(column=2, row=2, sticky='W', **options)
+        self.pass_label.grid(column=2, row=3, sticky='W', **options)
 
         self.fname_label = ttk.Label(self.frame, text='First Name:')
-        self.fname_label.grid(column=0, row=4, sticky='W', **options)
+        self.fname_label.grid(column=0, row=5, sticky='W', **options)
 
         self.lname_label = ttk.Label(self.frame, text='Last Name:')
-        self.lname_label.grid(column=2, row=4, sticky='W', **options)
+        self.lname_label.grid(column=2, row=5, sticky='W', **options)
 
         self.balance_label = ttk.Label(self.frame, text='Balance:')
-        self.balance_label.grid(column=0, row=6, sticky='W', **options)
+        self.balance_label.grid(column=0, row=7, sticky='W', **options)
 
         self.userID = tk.StringVar()
         self.userID = ttk.Entry(self.frame)
-        self.userID.grid(column=0, row=3)
+        self.userID.grid(column=0, row=4)
         self.userID.focus()
 
         self.password = tk.StringVar()
         self.password = ttk.Entry(self.frame)
-        self.password.grid(column=2, row=3, **options)
+        self.password.grid(column=2, row=4, **options)
         self.password.focus()
 
         self.firstName = tk.StringVar()
         self.firstName = ttk.Entry(self.frame)
-        self.firstName.grid(column=0, row=5, **options)
+        self.firstName.grid(column=0, row=6, **options)
         self.firstName.focus()
 
         self.lastName = tk.StringVar()
         self.lastName = ttk.Entry(self.frame)
-        self.lastName.grid(column=2, row=5, **options)
+        self.lastName.grid(column=2, row=6, **options)
         self.lastName.focus()
 
         self.balance = tk.StringVar()
         self.balance = ttk.Entry(self.frame)
-        self.balance.grid(column=0, row=7, **options)
+        self.balance.grid(column=0, row=8, **options)
         self.balance.focus()
 
         update_button = ttk.Button(self.frame, text='Delete User')
-        update_button.grid(column=5, row=3, sticky='e', **options)
+        update_button.grid(column=5, row=4, sticky='e', **options)
         update_button.configure(command=self.delete)
 
         update_button = ttk.Button(self.frame, text='Update Existing')
-        update_button.grid(column=5, row=5, sticky='e', **options)
+        update_button.grid(column=5, row=6, sticky='e', **options)
         update_button.configure(command=self.update)
 
         update_button = ttk.Button(self.frame, text='Add New User')
-        update_button.grid(column=5, row=7, sticky='e', **options)
+        update_button.grid(column=5, row=8, sticky='e', **options)
         update_button.configure(command=self.add)
 
         self.frame.grid(padx=10, pady=10)
@@ -672,17 +704,40 @@ class admin_user_dashboard:  # table based on https://www.geeksforgeeks.org/pyth
 
     def update(self):
         data = self.user_tree.item(self.user_tree.focus(), 'values')
-        user.updateInfo(data[0], self.userID.get(), self.firstName.get(
+        out = user.updateInfo(data[0], self.userID.get(), self.firstName.get(
         ), self.lastName.get(), self.password.get(), self.balance.get())
+
+        if out:
+            self.update_lab['text'] = "Update successful!"
+            
+            self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
+
+        else:
+            self.update_lab['text'] = "Error: user not updated, check inputs"
+            self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
+
+    def resetUpdateLabel(self):
+        self.update_lab['text'] = "Highlight user to update settings, fields left blank will not be updated:"
 
     def delete(self):
         data = self.user_tree.item(self.user_tree.focus(), 'values')
         user.removePlayer(data[0])
         self.user_tree.delete(self.user_tree.focus())
+        self.update_lab['text'] = f"{data[0]} deleted"
+        self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
 
     def add(self):
-        user.createPlayer(self.userID.get(), self.firstName.get(
+        out = user.createPlayer(self.userID.get(), self.firstName.get(
         ), self.lastName.get(), self.password.get(), self.balance.get())
+
+        if out:
+            self.update_lab['text'] = "User added!"
+            
+            self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
+
+        else:
+            self.update_lab['text'] = "Error: user not added, check inputs"
+            self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
 
     def search(self):
         self.window.after_cancel(self.refresh)
@@ -731,6 +786,10 @@ class admin_admin_dashboard:  # table based on https://www.geeksforgeeks.org/pyt
         self.sEntry = ttk.Entry(self.frame)
         self.sEntry.grid(column=3, row=1)
         self.sEntry.focus()
+        
+        self.update_lab = ttk.Label(self.frame, text="Highlight user to update settings, fields left blank will not be updated:")
+        self.update_lab.grid(column=0, row=2, columnspan=4,
+                             sticky='W', **options)
 
         searchButton = ttk.Button(self.frame, text='Search')
         searchButton.grid(column=4, row=1, sticky='e', **options)
@@ -741,47 +800,47 @@ class admin_admin_dashboard:  # table based on https://www.geeksforgeeks.org/pyt
         clearSearch.configure(command=self.clock)
 
         self.uname_label = ttk.Label(self.frame, text='Username:')
-        self.uname_label.grid(column=0, row=2, sticky='W', **options)
+        self.uname_label.grid(column=0, row=3, sticky='W', **options)
 
         self.pass_label = ttk.Label(self.frame, text='Password:')
-        self.pass_label.grid(column=2, row=2, sticky='W', **options)
+        self.pass_label.grid(column=2, row=3, sticky='W', **options)
 
         self.fname_label = ttk.Label(self.frame, text='First Name:')
-        self.fname_label.grid(column=0, row=4, sticky='W', **options)
+        self.fname_label.grid(column=0, row=5, sticky='W', **options)
 
         self.lname_label = ttk.Label(self.frame, text='Last Name:')
-        self.lname_label.grid(column=2, row=4, sticky='W', **options)
+        self.lname_label.grid(column=2, row=5, sticky='W', **options)
 
         self.userID = tk.StringVar()
         self.userID = ttk.Entry(self.frame)
-        self.userID.grid(column=0, row=3)
+        self.userID.grid(column=0, row=4)
         self.userID.focus()
 
         self.password = tk.StringVar()
         self.password = ttk.Entry(self.frame)
-        self.password.grid(column=2, row=3, **options)
+        self.password.grid(column=2, row=4, **options)
         self.password.focus()
 
         self.firstName = tk.StringVar()
         self.firstName = ttk.Entry(self.frame)
-        self.firstName.grid(column=0, row=5, **options)
+        self.firstName.grid(column=0, row=6, **options)
         self.firstName.focus()
 
         self.lastName = tk.StringVar()
         self.lastName = ttk.Entry(self.frame)
-        self.lastName.grid(column=2, row=5, **options)
+        self.lastName.grid(column=2, row=6, **options)
         self.lastName.focus()
 
         update_button = ttk.Button(self.frame, text='Delete User')
-        update_button.grid(column=5, row=3, sticky='e', **options)
+        update_button.grid(column=5, row=4, sticky='e', **options)
         update_button.configure(command=self.delete)
 
         update_button = ttk.Button(self.frame, text='Update Existing')
-        update_button.grid(column=5, row=5, sticky='e', **options)
+        update_button.grid(column=5, row=6, sticky='e', **options)
         update_button.configure(command=self.update)
 
         update_button = ttk.Button(self.frame, text='Add New User')
-        update_button.grid(column=5, row=7, sticky='e', **options)
+        update_button.grid(column=5, row=8, sticky='e', **options)
         update_button.configure(command=self.add)
 
         self.frame.grid(padx=10, pady=10)
@@ -798,17 +857,40 @@ class admin_admin_dashboard:  # table based on https://www.geeksforgeeks.org/pyt
 
     def update(self):
         data = self.user_tree.item(self.user_tree.focus(), 'values')
-        administrator.updateAdminInfo(data[0], self.userID.get(
+        out = administrator.updateAdminInfo(data[0], self.userID.get(
         ), self.firstName.get(), self.lastName.get(), self.password.get())
+
+        if out:
+            self.update_lab['text'] = "Update successful!"
+            
+            self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
+
+        else:
+            self.update_lab['text'] = "Error: user not updated, check inputs"
+            self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
+
+    def resetUpdateLabel(self):
+        self.update_lab['text'] = "Highlight user to update settings, fields left blank will not be updated:"
 
     def delete(self):
         data = self.user_tree.item(self.user_tree.focus(), 'values')
         user.removePlayer(data[0])
         self.user_tree.delete(self.user_tree.focus())
+        self.update_lab['text'] = f"{data[0]} deleted"
+        self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
 
     def add(self):
-        administrator.createAdmin(self.userID.get(), self.firstName.get(
+        out = administrator.createAdmin(self.userID.get(), self.firstName.get(
         ), self.lastName.get(), self.password.get())
+
+        if out:
+            self.update_lab['text'] = "User added!"
+            
+            self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
+
+        else:
+            self.update_lab['text'] = "Error: user not added, check inputs"
+            self.window.after(3000, self.resetUpdateLabel)  # reset label after 3 seconds
 
     def search(self):
         self.window.after_cancel(self.refresh)
