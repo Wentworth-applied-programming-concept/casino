@@ -144,7 +144,7 @@ class roulette:
         #return payout * betAmount
     def moneyLost(self, betAmount):
         self.admin.addGame("roulette", self.uid, betAmount, 0)
-        print(f"You have lost {betAmount}, your balance is now {self.player.getWinnings(self.uid)}")
+        print(f"You have lost $ {betAmount}, your balance is now {self.player.getWinnings(self.uid)}")
 
     def didYouWin(self, winningColor, winningNumber, betOption, userPick,betAmount):#using option need compare the value of the option with the values in the key of the bet dictionary
         winningBets = []
@@ -152,7 +152,7 @@ class roulette:
                         for key, list_of_values in self.bets.items ()
                         if winningNumber in list_of_values]
         print("The Winning bets contain ")
-        print(winningBets)
+        print(winningBets, winningNumber)
         if(betOption == '1'):
             if(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) == userPick: #put the keys and values of the bets dictionary into lists, which helps show if the bet and actual value/color are the same
                 print(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) #prints the winning color
