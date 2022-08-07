@@ -5,6 +5,9 @@ from src.ui.ui import player as ui
 from random import seed
 from random import randint
 
+
+
+
 class roulette:
 
     def __init__(self, uid, diff):
@@ -32,7 +35,7 @@ class roulette:
         self.payout = { # payout 1 means that u make the money u put in, and 2 means u profit twice the amount u paid
             'red': 1,
             'black': 1,
-            'green': 37,
+            'green': 35,
             'odd' : 1,
             'even': 1,
             'high': 1,
@@ -40,7 +43,7 @@ class roulette:
             'column1': 2,
             'column2': 2,
             'column3': 2,
-            'num': 37
+            'num': 35
             }
 
         Option = True
