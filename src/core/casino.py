@@ -147,25 +147,41 @@ class admin(user):
             casinoTotal.winnings = casinoTotal.winnings + cost - win
             casinoTotal.save()
 
+            return gid
+
         except Exception as e:
             print("Error: ", e)
+            return False
 
     def getGameHistory(self):
-        return game.select()
+        try:
+            return game.select()
+        except Exception as e:
+            return None
 
     def getGameByName(self, gameName):
-        return game.select().where(game.gameType == gameName)
-
+        try:
+            return game.select().where(game.gameType == gameName)
+        except Exception as e:
+            return None
     def getGameByPlayer(self, uid):
-        return game.select().where(game.userID == uid)
+        try:
+            return game.select().where(game.userID == uid)
+        except Exception as e:
+            return None
 
     def removeGame(self, gameName, gid):
-        game.delete().where(game.gameType == gameName).where(game.id == gid).execute()
+        try:
+            game.delete().where(game.gameType == gameName).where(game.id == gid).execute()
+        except Exception as e:
+            return None
 
     def checkPlayerBalance(self, uid):
-        user = Player.select().where(Player.userID == uid).get()
-        return user.winnings
-    
+        try:
+            user = Player.select().where(Player.userID == uid).get()
+            return user.winnings
+        except Exception as e:
+            return None
     def checkIfEnough(self, uid, cost): #function to check if player has enough money to play
         user = Player.select().where(Player.userID == uid).get()
         if user.winnings >= cost:
@@ -236,7 +252,7 @@ class admin(user):
             elif dataType == "lastName":
                 return Player.select().where(Player.lastName == entry).where(Player.admin == True)
         except Exception as e:
-            pass
+            return None
 
     def searchForPlayer(self, dataType, entry):
         try:
@@ -249,7 +265,7 @@ class admin(user):
             elif dataType == "winnings":
                 return Player.select().where(Player.winnings == entry).where(Player.admin == False)
         except Exception as e:
-            pass
+            return None
 
     def setGameDifficulty(self, game, diff):
         try:
@@ -264,10 +280,20 @@ class admin(user):
             return False
 
     def getGameDifficulty(self, game):
-        return casino.select().where(casino.entryName == game).get().difficulty
+        try:
+            return casino.select().where(casino.entryName == game).get().difficulty
+        except Exception as e:
+            return None
 
     def checkCasinoWinnings(self):
-        return casino.select().where(casino.entryName == "casino").get().winnings
-    
+        try:
+            return casino.select().where(casino.entryName == "casino").get().winnings
+        except Exception as e:
+            return None
+
     def checkGameWinnings(self, game):
-        return casino.select().where(casino.entryName == game).get().winnings
+        try:
+            return casino.select().where(casino.entryName == game).get().winnings
+        except Exception as e:
+            return None
+        
