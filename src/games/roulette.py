@@ -32,6 +32,7 @@ class roulette:
         self.payout = { # payout 1 means that u make the money u put in, and 2 means u profit twice the amount u paid
             'red': 1,
             'black': 1,
+            'green': 37,
             'odd' : 1,
             'even': 1,
             'high': 1,
@@ -39,7 +40,7 @@ class roulette:
             'column1': 2,
             'column2': 2,
             'column3': 2,
-            'num': 36
+            'num': 37
             }
 
         Option = True
@@ -105,11 +106,11 @@ class roulette:
             print("The game is now in session/ No more bets")
             winningColor, winningValue  = self.getValue()
             if winningColor == "b":
-                print("The dice landed on Black with a value of  " + winningValue)
+                print("The ball has landed on Black with a value of  " + winningValue)
             elif winningColor == "r":
-                print("The dice has landed on red with a value of " + winningValue)
+                print("The ball has landed on red with a value of " + winningValue)
             else:
-                print("The dice has landed on green with a value of " + winningValue)
+                print("The ball has landed on green with a value of " + winningValue)
             self.didYouWin(winningColor, winningValue, Option, userPick, bet)
             keepPlaying=input("Woud you like to keep playing:")
             print(keepPlaying)
