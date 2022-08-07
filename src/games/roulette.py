@@ -104,13 +104,19 @@ class roulette:
             #highOption = "Low"
             print("The game is now in session/ No more bets")
             winningColor, winningValue  = self.getValue()
+            if winningColor == "b":
+                print("The dice landed on Black with a value of  " + winningValue)
+            elif winningColor == "r":
+                print("The dice has landed on red with a value of " + winningValue)
+            else:
+                print("The dice has landed on green with a value of " + winningValue)
             print(winningValue)
             print(winningColor)
             self.didYouWin(winningColor, winningValue, Option, userPick, bet)
             keepPlaying=input("Woud you like to keep playing:")
             print(keepPlaying)
             if keepPlaying == "yes" or keepPlaying == "Yes":
-                print(keepPlaying)
+                #print(keepPlaying)
                 game_in_session = True
                 Option = True
                 goThrough = True
@@ -143,12 +149,11 @@ class roulette:
         print(f"You have lost {betAmount}, your balance is now {self.player.getWinnings(self.uid)}")
 
     def didYouWin(self, winningColor, winningNumber, betOption, userPick,betAmount):#using option need compare the value of the option with the values in the key of the bet dictionary
-        print(betOption)
         winningBets = []
         winningBets = [key
                         for key, list_of_values in self.bets.items ()
                         if winningNumber in list_of_values]
-        print(winningBets)
+        print("The winning bets are " + winningBets)
         if(betOption == '1'):
             if(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) == userPick: #put the keys and values of the bets dictionary into lists, which helps show if the bet and actual value/color are the same
                 print(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) #prints the winning color
@@ -161,7 +166,6 @@ class roulette:
             else:
                 self.moneyLost(betAmount)
         elif(betOption == '3'):
-            print(userPick)
             i = 0
             for x in range(len(winningBets)):
                 if(userPick == winningBets[x]):
@@ -172,7 +176,6 @@ class roulette:
                     return self.moneyWon(betAmount,userPick)
 
         elif(betOption == '4'):
-            print(userPick)
             i = 0
             for x in range(len(winningBets)):
                 if(userPick == winningBets[x]):
@@ -182,7 +185,6 @@ class roulette:
             else:
                     return self.moneyWon(betAmount,userPick)
         elif(betOption == '5'):
-            print(userPick)
             i = 0
             for x in range(len(winningBets)):
                 if(userPick == winningBets[x]):
