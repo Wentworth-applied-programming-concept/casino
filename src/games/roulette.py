@@ -110,8 +110,6 @@ class roulette:
                 print("The dice has landed on red with a value of " + winningValue)
             else:
                 print("The dice has landed on green with a value of " + winningValue)
-            print(winningValue)
-            print(winningColor)
             self.didYouWin(winningColor, winningValue, Option, userPick, bet)
             keepPlaying=input("Woud you like to keep playing:")
             print(keepPlaying)
