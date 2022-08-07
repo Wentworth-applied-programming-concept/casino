@@ -151,7 +151,8 @@ class roulette:
         winningBets = [key
                         for key, list_of_values in self.bets.items ()
                         if winningNumber in list_of_values]
-        print("The winning bets are " + winningBets)
+        print("The Winning bets contain ")
+        print(winningBets)
         if(betOption == '1'):
             if(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) == userPick: #put the keys and values of the bets dictionary into lists, which helps show if the bet and actual value/color are the same
                 print(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) #prints the winning color
