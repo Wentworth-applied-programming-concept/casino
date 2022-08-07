@@ -35,8 +35,12 @@ class simulation:
             gameType = random.randint(0, len(self.games)-1)
             user = random.randint(0, len(self.uids)-1)
             dateVal = self.faker.date_between_dates(date_start=datetime(2022,5,1), date_end=datetime(2022,8,25))
-            won  = random.randint(0,1000)
-            self.administrator.addGame(self.games[gameType], self.uids[user], 100, won, datePlayed=dateVal)
+            won = random.randint(0,10)
+            if won == 0:
+                winnings = 5000
+            else:
+                winnings = 0
+            self.administrator.addGame(self.games[gameType], self.uids[user], 100, winnings, datePlayed=dateVal)
 
 if __name__=='__main__':
     sim = simulation(100) #change this to change the number of games to be generated

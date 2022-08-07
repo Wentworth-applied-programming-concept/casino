@@ -32,20 +32,24 @@ class player(user):
             return None
 
     def updateInfo(self, idVal, uid='', fName='', lName='', pwd='', balance=''):
-        '''update STUDENT, set any vals that should not be changed to null'''
-        usr = Player.select().where(Player.userID == idVal).get()
-        if fName != '':
-            usr.firstName = fName
-        if lName != '':
-            usr.lastName = lName
-        if uid != '':
-            usr.userID = uid
-        if pwd != '':
-            usr.password = pwd
-        if balance != '':
-            usr.winnings = balance
+        '''update player, set any vals that should not be changed to null'''
+        try:
+            usr = Player.select().where(Player.userID == idVal).get()
+            if fName != '':
+                usr.firstName = fName
+            if lName != '':
+                usr.lastName = lName
+            if uid != '':
+                usr.userID = uid
+            if pwd != '':
+                usr.password = pwd
+            if balance != '':
+                usr.winnings = balance
 
-        usr.save()
+            usr.save()
+            return True
+        except Exception as e:
+            return False
 
     def getNameFromUID(self, uid):
         try:
@@ -55,8 +59,11 @@ class player(user):
             return None
 
     def createPlayer(self, uid, fName, lName, pword, bal):
-        Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, winnings=bal, admin=False)
-
+        try:
+            Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, winnings=bal, admin=False)
+            return True
+        except Exception as e:
+            return False
     def removePlayer(self, uid):
         Player.delete().where(Player.userID == uid).execute()
 
@@ -86,21 +93,29 @@ class admin(user):
             return None
 
     def createAdmin(self, uid, fName, lName, pword):
-        Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, admin=True)
+        try:
+            Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, admin=True)
+            return True
+        except Exception as e:
+            return False
 
     def updateAdminInfo(self, idVal, uid='', fName='', lName='', pwd=''):
-        '''update STUDENT, set any vals that should not be changed to null'''
-        usr = Player.select().where(Player.userID == idVal).get()
-        if fName != '':
-            usr.firstName = fName
-        if lName != '':
-            usr.lastName = lName
-        if uid != '':
-            usr.userID = uid
-        if pwd != '':
-            usr.password = pwd
+        '''update admin, set any vals that should not be changed to null'''
+        try:
+            usr = Player.select().where(Player.userID == idVal).get()
+            if fName != '':
+                usr.firstName = fName
+            if lName != '':
+                usr.lastName = lName
+            if uid != '':
+                usr.userID = uid
+            if pwd != '':
+                usr.password = pwd
 
-        usr.save()
+            usr.save()
+            return True
+        except Exception as e:
+            return False
 
     def addGame(self, gameName, uid, cost, win, datePlayed=None):
         try:
@@ -238,11 +253,15 @@ class admin(user):
 
     def setGameDifficulty(self, game, diff):
         try:
-            gameTracker = casino.select().where(casino.entryName == game).get()
-            gameTracker.difficulty = diff
-            gameTracker.save()
+            if diff <= 5:
+                gameTracker = casino.select().where(casino.entryName == game).get()
+                gameTracker.difficulty = diff
+                gameTracker.save()
+                return True
+            else:
+                return False
         except Exception as e:
-            print("Error: ", e)
+            return False
 
     def getGameDifficulty(self, game):
         return casino.select().where(casino.entryName == game).get().difficulty
