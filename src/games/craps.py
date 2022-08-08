@@ -93,9 +93,12 @@ class craps:
                     if input("Would you like to bet more? (y/n): ") == 'y':
                         while(1):        
                             i = int(input("Which number will you bet on? (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12): "))
-                            if i in num:
-                                break
-                            else:
+                            try:
+                                if i in num:
+                                    break
+                                else:
+                                    print("Invalid bet.")
+                            except:
                                 print("Invalid bet.")
                     else:
                         break
@@ -103,9 +106,12 @@ class craps:
             elif self.flag == 0:
                 while(1):
                     i = int(input("Which number will you bet on? (2, 3, 7, 11, 12): "))
-                    if i in (2, 3, 7, 11, 12):
-                        break
-                    else:
+                    try:
+                        if i in (2, 3, 7, 11, 12):
+                            break
+                        else:
+                            print("Invalid bet.")
+                    except:
                         print("Invalid bet.")
 
             while(1):
