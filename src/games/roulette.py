@@ -5,6 +5,9 @@ from src.ui.ui import player as ui
 from random import seed
 from random import randint
 
+
+
+
 class roulette:
 
     def __init__(self, uid, diff):
@@ -32,6 +35,7 @@ class roulette:
         self.payout = { # payout 1 means that u make the money u put in, and 2 means u profit twice the amount u paid
             'red': 1,
             'black': 1,
+            'green': 35,
             'odd' : 1,
             'even': 1,
             'high': 1,
@@ -39,7 +43,7 @@ class roulette:
             'column1': 2,
             'column2': 2,
             'column3': 2,
-            'num': 36
+            'num': 35
             }
 
         Option = True
@@ -104,13 +108,17 @@ class roulette:
             #highOption = "Low"
             print("The game is now in session/ No more bets")
             winningColor, winningValue  = self.getValue()
-            print(winningValue)
-            print(winningColor)
+            if winningColor == "b":
+                print("The ball has landed on Black with a value of  " + winningValue)
+            elif winningColor == "r":
+                print("The ball has landed on red with a value of " + winningValue)
+            else:
+                print("The ball has landed on green with a value of " + winningValue)
             self.didYouWin(winningColor, winningValue, Option, userPick, bet)
             keepPlaying=input("Woud you like to keep playing:")
             print(keepPlaying)
             if keepPlaying == "yes" or keepPlaying == "Yes":
-                print(keepPlaying)
+                #print(keepPlaying)
                 game_in_session = True
                 Option = True
                 goThrough = True
@@ -140,15 +148,15 @@ class roulette:
         #return payout * betAmount
     def moneyLost(self, betAmount):
         self.admin.addGame("roulette", self.uid, betAmount, 0)
-        print(f"You have lost {betAmount}, your balance is now {self.player.getWinnings(self.uid)}")
+        print(f"You have lost $ {betAmount}, your balance is now {self.player.getWinnings(self.uid)}")
 
     def didYouWin(self, winningColor, winningNumber, betOption, userPick,betAmount):#using option need compare the value of the option with the values in the key of the bet dictionary
-        print(betOption)
         winningBets = []
         winningBets = [key
                         for key, list_of_values in self.bets.items ()
                         if winningNumber in list_of_values]
-        print(winningBets)
+        print("The Winning bets contain ")
+        print(winningBets, winningNumber)
         if(betOption == '1'):
             if(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) == userPick: #put the keys and values of the bets dictionary into lists, which helps show if the bet and actual value/color are the same
                 print(list(self.bets.keys())[list(self.bets.values()).index(winningColor)]) #prints the winning color
@@ -157,11 +165,10 @@ class roulette:
                 self.moneyLost(betAmount)
         elif(betOption == '2'):
             if winningNumber == userPick:
-                return self.moneyWon(betAmount, userPick)
+                return self.moneyWon(betAmount, 'num')
             else:
                 self.moneyLost(betAmount)
         elif(betOption == '3'):
-            print(userPick)
             i = 0
             for x in range(len(winningBets)):
                 if(userPick == winningBets[x]):
@@ -172,7 +179,6 @@ class roulette:
                     return self.moneyWon(betAmount,userPick)
 
         elif(betOption == '4'):
-            print(userPick)
             i = 0
             for x in range(len(winningBets)):
                 if(userPick == winningBets[x]):
@@ -182,7 +188,6 @@ class roulette:
             else:
                     return self.moneyWon(betAmount,userPick)
         elif(betOption == '5'):
-            print(userPick)
             i = 0
             for x in range(len(winningBets)):
                 if(userPick == winningBets[x]):

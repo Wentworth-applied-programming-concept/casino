@@ -32,20 +32,24 @@ class player(user):
             return None
 
     def updateInfo(self, idVal, uid='', fName='', lName='', pwd='', balance=''):
-        '''update STUDENT, set any vals that should not be changed to null'''
-        usr = Player.select().where(Player.userID == idVal).get()
-        if fName != '':
-            usr.firstName = fName
-        if lName != '':
-            usr.lastName = lName
-        if uid != '':
-            usr.userID = uid
-        if pwd != '':
-            usr.password = pwd
-        if balance != '':
-            usr.winnings = balance
+        '''update player, set any vals that should not be changed to null'''
+        try:
+            usr = Player.select().where(Player.userID == idVal).get()
+            if fName != '':
+                usr.firstName = fName
+            if lName != '':
+                usr.lastName = lName
+            if uid != '':
+                usr.userID = uid
+            if pwd != '':
+                usr.password = pwd
+            if balance != '':
+                usr.winnings = balance
 
-        usr.save()
+            usr.save()
+            return True
+        except Exception as e:
+            return False
 
     def getNameFromUID(self, uid):
         try:
@@ -55,8 +59,11 @@ class player(user):
             return None
 
     def createPlayer(self, uid, fName, lName, pword, bal):
-        Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, winnings=bal, admin=False)
-
+        try:
+            Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, winnings=bal, admin=False)
+            return True
+        except Exception as e:
+            return False
     def removePlayer(self, uid):
         Player.delete().where(Player.userID == uid).execute()
 
@@ -86,21 +93,29 @@ class admin(user):
             return None
 
     def createAdmin(self, uid, fName, lName, pword):
-        Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, admin=True)
+        try:
+            Player.create(userID=uid, firstName=fName, lastName=lName, password=pword, admin=True)
+            return True
+        except Exception as e:
+            return False
 
     def updateAdminInfo(self, idVal, uid='', fName='', lName='', pwd=''):
-        '''update STUDENT, set any vals that should not be changed to null'''
-        usr = Player.select().where(Player.userID == idVal).get()
-        if fName != '':
-            usr.firstName = fName
-        if lName != '':
-            usr.lastName = lName
-        if uid != '':
-            usr.userID = uid
-        if pwd != '':
-            usr.password = pwd
+        '''update admin, set any vals that should not be changed to null'''
+        try:
+            usr = Player.select().where(Player.userID == idVal).get()
+            if fName != '':
+                usr.firstName = fName
+            if lName != '':
+                usr.lastName = lName
+            if uid != '':
+                usr.userID = uid
+            if pwd != '':
+                usr.password = pwd
 
-        usr.save()
+            usr.save()
+            return True
+        except Exception as e:
+            return False
 
     def addGame(self, gameName, uid, cost, win, datePlayed=None):
         try:
@@ -132,25 +147,41 @@ class admin(user):
             casinoTotal.winnings = casinoTotal.winnings + cost - win
             casinoTotal.save()
 
+            return gid
+
         except Exception as e:
             print("Error: ", e)
+            return False
 
     def getGameHistory(self):
-        return game.select()
+        try:
+            return game.select()
+        except Exception as e:
+            return None
 
     def getGameByName(self, gameName):
-        return game.select().where(game.gameType == gameName)
-
+        try:
+            return game.select().where(game.gameType == gameName)
+        except Exception as e:
+            return None
     def getGameByPlayer(self, uid):
-        return game.select().where(game.userID == uid)
+        try:
+            return game.select().where(game.userID == uid)
+        except Exception as e:
+            return None
 
     def removeGame(self, gameName, gid):
-        game.delete().where(game.gameType == gameName).where(game.id == gid).execute()
+        try:
+            game.delete().where(game.gameType == gameName).where(game.id == gid).execute()
+        except Exception as e:
+            return None
 
     def checkPlayerBalance(self, uid):
-        user = Player.select().where(Player.userID == uid).get()
-        return user.winnings
-    
+        try:
+            user = Player.select().where(Player.userID == uid).get()
+            return user.winnings
+        except Exception as e:
+            return None
     def checkIfEnough(self, uid, cost): #function to check if player has enough money to play
         user = Player.select().where(Player.userID == uid).get()
         if user.winnings >= cost:
@@ -221,7 +252,7 @@ class admin(user):
             elif dataType == "lastName":
                 return Player.select().where(Player.lastName == entry).where(Player.admin == True)
         except Exception as e:
-            pass
+            return None
 
     def searchForPlayer(self, dataType, entry):
         try:
@@ -234,21 +265,35 @@ class admin(user):
             elif dataType == "winnings":
                 return Player.select().where(Player.winnings == entry).where(Player.admin == False)
         except Exception as e:
-            pass
+            return None
 
     def setGameDifficulty(self, game, diff):
         try:
-            gameTracker = casino.select().where(casino.entryName == game).get()
-            gameTracker.difficulty = diff
-            gameTracker.save()
+            if diff <= 5:
+                gameTracker = casino.select().where(casino.entryName == game).get()
+                gameTracker.difficulty = diff
+                gameTracker.save()
+                return True
+            else:
+                return False
         except Exception as e:
-            print("Error: ", e)
+            return False
 
     def getGameDifficulty(self, game):
-        return casino.select().where(casino.entryName == game).get().difficulty
+        try:
+            return casino.select().where(casino.entryName == game).get().difficulty
+        except Exception as e:
+            return None
 
     def checkCasinoWinnings(self):
-        return casino.select().where(casino.entryName == "casino").get().winnings
-    
+        try:
+            return casino.select().where(casino.entryName == "casino").get().winnings
+        except Exception as e:
+            return None
+
     def checkGameWinnings(self, game):
-        return casino.select().where(casino.entryName == game).get().winnings
+        try:
+            return casino.select().where(casino.entryName == game).get().winnings
+        except Exception as e:
+            return None
+        
