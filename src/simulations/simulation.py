@@ -35,7 +35,7 @@ class simulation:
             gameType = random.randint(0, len(self.games)-1)
             user = random.randint(0, len(self.uids)-1)
             dateVal = self.faker.date_between_dates(date_start=datetime(2022,5,1), date_end=datetime(2022,8,25))
-            won = random.randint(0,20)
+            won = random.randint(0,15)
             if won == 0:
                 winnings = 1000
             else:

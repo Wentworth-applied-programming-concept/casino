@@ -1053,8 +1053,7 @@ class admin_graph:
             for val in data:
                 times.append(val.timeStamp)
                 winnings.append(val.winnings)
-
-            if self.game.get() != "":
+            if self.dataPoints.get() != "":
                 dp = -1*int(self.dataPoints.get())
             else:
                 dp = -5
@@ -1062,13 +1061,15 @@ class admin_graph:
             times = times[dp:]
 
             # formatting from https://stackoverflow.com/questions/9627686/plotting-dates-on-the-x-axis-with-pythons-matplotlib
+            plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=15))
+
             plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-            plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-            plt.bar(times, winnings, linewidth=2.0)
-            plt.xticks(times)
-            plt.yticks(winnings)
+            plt.scatter(times, winnings)
+
             plt.gcf().autofmt_xdate()
             plt.show()
+
+
 
         except Exception as e:
             print(e)
