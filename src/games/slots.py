@@ -12,7 +12,6 @@ from PIL import ImageTk, Image
 
 root = Tk()
 root.geometry("600x500")
-root.iconbitmap('src/games/slotAssets/images/slotsLogo.ico')
 root.title("Casino Slots")
 
 pygame.mixer.init()

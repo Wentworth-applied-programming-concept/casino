@@ -46,6 +46,10 @@ class player(user):
             if balance != '':
                 usr.winnings = balance
 
+            gm = game.select().where(game.userID == idVal)
+            for g in gm:
+                g.userID = uid
+                g.save()
             usr.save()
             return True
         except Exception as e:

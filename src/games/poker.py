@@ -13,7 +13,7 @@ from src.ui.ui import player as ui
 import random
 
 class poker:
-    def __init__(self):
+    def __init__(self, uid, difficulty):
         self.player = player()
         self.admin = admin()
         self.uid = uid
