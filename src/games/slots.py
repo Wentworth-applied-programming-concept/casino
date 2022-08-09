@@ -145,6 +145,7 @@ def decreaseBet():
 
 def exitGame():
     root.destroy()
+    pygame.mixer.stop()
     
 
 def startGame():
